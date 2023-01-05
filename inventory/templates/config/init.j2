@@ -1,0 +1,14 @@
+!
+logging buffered {{ LOGGIN_BUFFERED }}
+logging console informational
+logging monitor informational
+logging synchronous level all
+!
+service routing protocols model multi-agent
+!
+hostname {{ HOSTNAME }}
+{%if ADMIN_USER_NAME != "" and ADMIN_USER_PW != "" %}
+!
+username {{ ADMIN_USER_NAME }} privilege {{ ADMIN_PRIVILEGE }} secret {{ ADMIN_USER_PW }}
+{%endif%}
+!

@@ -1,0 +1,16 @@
+---
+spine:
+  data:
+    desc: spine
+spineOdd:
+  data:
+    desc: spine 홀수번
+spineEven:
+  data:
+    desc: spine 짝수번
+leaf:
+  data:
+    desc: leaf
+bl:
+  data:
+    desc: border leaf

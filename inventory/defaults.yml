@@ -1,0 +1,19 @@
+---
+data:
+  TERMINAL_LENGTH: 40
+  TERMINAL_WIDTH: 200
+  SPANNING_TREE_MODE: none
+  CLOCK_TIMEZONE: Asia/Seoul
+  LOGGIN_BUFFERED: 1000
+  MGMT_VRF: MGMT
+  MGMT_INTERFACE: Management1
+  MGMT_GW: 192.168.22.1
+  ARP_AGING: 300
+  MAC_AGING: 300
+  ADMIN_USER_NAME: admin
+  ADMIN_USER_PW: admin
+  ADMIN_PRIVILEGE: 15
+connection_options:
+  netmiko:
+    extras:
+      timeout: 20
