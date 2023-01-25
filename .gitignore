@@ -4,7 +4,6 @@ dist/
 exec.build/
 exec.dist/
 *.spec
-topology/
 build/
 *.pptx
 __pycache__/
