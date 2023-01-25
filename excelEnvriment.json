@@ -22,7 +22,11 @@
     "arpAging": {"sheet": "Var", "p": "B19", "mapping":"arp_aging", "defaultValue": "1"},
     "p2pSubnet": {"sheet": "Var", "p": "E17", "mapping":"p2p_subnet", "defaultValue": "30"},
     "ansibleIp": {"sheet": "Var", "p": "B23", "mapping":"ansible_ip", "defaultValue": "192.168.22.251"},
-    "eosVersion": {"sheet": "Var", "p": "B24", "mapping":"eos_version", "defaultValue": "4.27.4M"}
+    "eosVersion": {"sheet": "Var", "p": "B24", "mapping":"eos_version", "defaultValue": "4.27.4M"},
+    "asnRule": {"sheet": "Var", "p": "E3", "mapping":"asn_rule", "defaultValue": "Common-Common"},
+    "spineNum": {"sheet": "Var", "p": "E8", "mapping":"spine_num", "defaultValue": "2"},
+    "leafNum": {"sheet": "Var", "p": "E9", "mapping":"leaf_num", "defaultValue": "4"},
+    "spineBGPAsn": {"sheet": "Var", "p": "E5", "mapping":"spine_bgp_asn", "defaultValue": "65000"}
   },
   "spine": {
     "sheet": "SwitchIPInfo",

@@ -1,5 +1,5 @@
 import asyncio
-from src.UI import UI
+from src.UI3 import UI3
 from src.ProcessImpl import ProcessImpl
 import tkinter as tk
 from tkinter import ttk, messagebox
@@ -14,10 +14,10 @@ from datetime import datetime
 from openpyxl import load_workbook
 from generators.BlankNone import *
 from generators.generateInventory import generateInventory 
-from async_tkinter_loop import async_handler, async_mainloop
 
 class App:
 	def exec(self):
-		self.window = UI(asyncio, ProcessImpl())
+		self.window = UI3(asyncio, ProcessImpl())
+		# await self.window.show();
 
 App().exec()

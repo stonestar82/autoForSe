@@ -11,7 +11,7 @@ router bgp {{ BGP_ASN }}
 	neighbor UNDERLAY send-community
 	!
 {%if TYPE == "Leaf" or TYPE == "BL"%}
-	neighbor UNDERLAY remote-as 65000
+	neighbor UNDERLAY remote-as {{ SPINE_BGP_ASN }}
 	neighbor 100.101.1.1 peer group UNDERLAY
 	neighbor 100.101.1.1 description Spine-01
 	neighbor 100.102.1.1 peer group UNDERLAY

@@ -1,2 +1,11 @@
 *.cfg
 *.pyc
+dist/
+exec.build/
+exec.dist/
+*.spec
+topology/
+build/
+*.pptx
+__pycache__/
+log/

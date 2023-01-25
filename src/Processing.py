@@ -4,6 +4,13 @@ from tkinter import *
 import yaml, json
 import asyncio, os
 from nornir import InitNornir
+from nornir.plugins import *
+from nornir.plugins.inventory import *
+from nornir.plugins.runners import *
+from nornir.plugins.functions import *
+from nornir.plugins.processors import *
+from nornir.plugins.tasks import *
+from nornir.plugins.connections import *
 from nornir_netmiko.tasks import netmiko_send_config, netmiko_send_command
 from nornir.core.task import Task, Result
 from jinja2 import Template
@@ -11,10 +18,15 @@ from datetime import datetime
 from openpyxl import load_workbook
 from generators.BlankNone import *
 from generators.generateInventory import generateInventory 
+from operator import eq
+import zipfile
+from src.ProcessImpl import ProcessImpl
 
-class Processing(tk.Tk):
-	def __init__(self, loop):
-		self.loop = loop
+class Processing():
+	def __init__(self, asyncio=asyncio, process=ProcessImpl):
+		self.asyncio = asyncio
+		self.process = process
+		self.loop = self.asyncio.get_event_loop()
 		self.root = tk.Tk()
 		self.root.title("GlobalTelecom & i-Cloud")
 		self.root.geometry("640x500+600+100") ## w, h, x, y
@@ -126,6 +138,9 @@ class Processing(tk.Tk):
   
 		self.buttonBackUp = tk.Button(self.frameRight, text="full IPv6 Config 생성", width=18, command=lambda: self.loop.create_task(self.createConfig("fullv6")))
 		self.buttonBackUp.grid(row=1, column=1, sticky=tk.W, padx=(8, 8), pady=(8, 8))
+  
+		self.buttonBackUp = tk.Button(self.frameRight, text="토폴로지 생성", width=18, command=lambda: self.loop.create_task(self.createDefaultTopology()))
+		self.buttonBackUp.grid(row=2, column=1, sticky=tk.W, padx=(8, 8), pady=(8, 8))
 
 		self.buttonSelectedDeploy = tk.Button(self.frameRight, text="※※※ 초기화 ※※※", width=18, command=lambda: self.loop.create_task(self.cleanConfigCall()))
 		self.buttonSelectedDeploy.grid(row=3, column=1, sticky=tk.W, padx=(8, 8), pady=(8, 8))
@@ -165,9 +180,17 @@ class Processing(tk.Tk):
   
 	def windowButtonClose(self):
 		# print("close!!")
-		self.loop.stop()
-		self.loop.close()
-  
+		try:
+			self.loop.complete()
+			self.loop.stop()
+			self.loop.close()
+		except:
+			print("close!")		
+		finally:
+			self.root.quit()
+			self.root.destroy()
+			print("finally close")
+   
 	def cleanConfig(self, task: Task):
 		mgmtVrf = task.host.defaults.data["MGMT_VRF"]
 		mgmtGw = task.host.defaults.data["MGMT_GW"]
@@ -355,6 +378,206 @@ class Processing(tk.Tk):
 		sheet = workbook["db"]
 		sheet.append([memo, folderName, nowDate])
 		workbook.save(self.db)
+
+	async def createTopology(self):
+
+		spineSwitchs = {}
+		leafSwitchs = {}
+
+		with open("./inventory/hosts.yml") as f:
+			hosts = yaml.load(f, Loader=yaml.FullLoader)
+			f.close()
+
+		for host in hosts:
+			hostType = hosts[host]["data"]["TYPE"]
+
+			if (hostType.upper() == "SPINE"):
+				spineSwitchs.setdefault(
+					host, {}
+				)
+			else:
+				leafSwitchs.setdefault(
+					host, {}
+				)
+    
+		spinesCount = len(spineSwitchs)
+		leafsCount = len(leafSwitchs)
+		width = 1920
+		space = 200 ## switch icon 사이 간격
+		spineTopMargin = 200
+		leafTopMargin = 600
+		iconWidth = 50
+  
+		spineIdx = 0
+		leafIdx = 0
+  
+		## spine icon 시작 위치값
+		s_start = int(width / spinesCount - space / spinesCount)
+		if eq(1, spinesCount):
+			s_start = int(width / 2 - (iconWidth / 2))
+  
+		## leaf icon 시작 위치값
+		l_start = int(width / leafsCount + space - (iconWidth/2))
+  
+		for host in hosts:
+			hostType = hosts[host]["data"]["TYPE"]
+			# print("host type = ", host)
+			if (hostType.upper() == "SPINE"):
+				spineIdx = spineIdx + 1
+				spineSwitchs[host]= {
+															"ID": spineIdx,
+															"LEFT": s_start + (spineIdx * space),
+															"TOP": spineTopMargin
+														}
+				
+			else:
+				leafIdx = leafIdx + 1
+				leafSwitchs[host]= {
+															"ID": leafIdx + spinesCount,
+															"LEFT": l_start + (leafIdx * space),
+															"TOP": leafTopMargin
+														}
+    
+  
+		with open("./inventory/topologyInterfaces.yml") as f:
+			topologyInterfaces = yaml.load(f, Loader=yaml.FullLoader)
+			f.close()
+
+		topologyName = "TESTTOPOLOGY"
+		data = {
+			"NAME": topologyName,
+			"EOS_VERSION": "veos-4.28.5M",
+			"SPINES": spineSwitchs,
+			"LEAFS": leafSwitchs,
+			"INTERFACES": topologyInterfaces
+		}
+		
+		with open('./inventory/templates/topology/topology.j2') as f:
+			template = Template(f.read())
+		with BlankNone(), open(f'./{topologyName}.unl', "w", encoding='utf8') as reqs:   
+				reqs.write(template.render(**data))
+				reqs.close() 
+    
+    
+		zipOutput = f'./{topologyName}.zip'
+		file = f'./{topologyName}.unl'
+		zipFile = zipfile.ZipFile(zipOutput, "w")
+		
+		zipFile.write(file, compress_type=zipfile.ZIP_DEFLATED)
+
+		zipFile.close()
+  
+		os.remove(file)
+  
+  
+	async def createDefaultTopology(self):
+
+		spineSwitchs = {}
+		leafSwitchs = {}
+  
+		spinesCount = 4
+		leafsCount = 16
+		width = 1920
+		space = 200 ## switch icon 사이 간격
+		spineTopMargin = 200
+		leafTopMargin = 600
+		iconWidth = 50
+  
+		spineIdx = 0
+		leafIdx = 0
+  
+		## spine icon 시작 위치값
+		# s_start = int(width / spinesCount + space - (iconWidth/2))
+		s_start = int((width/2) - (((spinesCount /2) * iconWidth) + (space / 2) + (space * (spinesCount /2 - 1))))
+		# s_start = int(width - (((spinesCount /2) * iconWidth) + (space / 2) + (space * (spinesCount /2 - 1))))
+		# print(s_start)
+		if eq(1, spinesCount):
+			s_start = int(width / 2 - (iconWidth / 2))
+   
+		if s_start < 0:
+			s_start = 10
+  
+		## leaf icon 시작 위치값
+		# l_start = int(width / leafsCount + space - (iconWidth/2))
+		l_start = int((width/2) - (((leafsCount /2) * iconWidth) + (space / 2) + (space * (leafsCount /2 - 1))))
+		if l_start < 0:
+			l_start = 10
+     
+		for i in range(1, spinesCount + 1):
+			spineIdx = spineIdx + 1
+			spineName = "Spine-0" + str(i)
+			spineSwitchs.setdefault(
+					spineName, {
+						"ID": spineIdx,
+						"LEFT": s_start + (spineIdx * space),
+						"TOP": spineTopMargin
+					}
+			)
+   
+		space = space - (leafsCount * 3)
+		if space < 50:
+			space = 50
+   
+		for i in range(1, leafsCount + 1):
+			leafIdx = leafIdx + 1
+			leafName = "Leaf-0" + str(i)
+			leafSwitchs.setdefault(
+					leafName, {
+						"ID": leafIdx + spinesCount,
+						"LEFT": l_start + (leafIdx * space),
+						"TOP": leafTopMargin
+					}
+			)
+
+		topologyInterfaces = {}
+  
+		id = 0
+		
+		leafPort = 0
+		for spine in spineSwitchs:
+			leafPort = leafPort + 1
+			spinePort = 0
+			for leaf in leafSwitchs:
+				id = id + 1
+				spinePort = spinePort + 1
+    
+				topologyInterfaces.setdefault(
+					id, {
+						"START": spine,
+						"SPORT": "Et" + str(spinePort),
+						"END": leaf,
+						"EPORT": "Et" + str(leafPort),
+					}
+				)
+  
+		
+		topologyName = "TESTTOPOLOGY1"
+		data = {
+			"NAME": topologyName,
+			"EOS_VERSION": "veos-4.28.5M",
+			"SPINES": spineSwitchs,
+			"LEAFS": leafSwitchs,
+			"INTERFACES": topologyInterfaces
+		}
+		
+		# print(data)
+		with open('./inventory/templates/topology/topology.j2') as f:
+			template = Template(f.read())
+		with BlankNone(), open(f'./{topologyName}.unl', "w", encoding='utf8') as reqs:   
+				reqs.write(template.render(**data))
+				reqs.close() 
+    
+    
+		zipOutput = f'./{topologyName}.zip'
+		file = f'./{topologyName}.unl'
+		zipFile = zipfile.ZipFile(zipOutput, "w")
+		
+		zipFile.write(file, compress_type=zipfile.ZIP_DEFLATED)
+
+		zipFile.close()
+  
+		os.remove(file)
+    
 
 	async def createConfig(self, session):
 		self.lastConfigGen = session

@@ -1,12 +1,20 @@
 from multiprocessing.sharedctypes import Value
 import re, ipaddress
-import yaml, json
+import yaml, json, sys
 from generators.BlankNone import *
 from openpyxl import load_workbook
 from operator import eq
 import pandas as pd
 from jinja2 import Template
 from PIL import Image, ImageFont, ImageDraw
+
+def resource_path(relative_path):
+	try:
+		# PyInstaller에 의해 임시폴더에서 실행될 경우 임시폴더로 접근하는 함수
+		base_path = sys._MEIPASS
+	except Exception:
+		base_path = os.path.abspath(".")
+	return os.path.join(base_path, relative_path)
 
 def convertToBoolIfNeeded(variable):
 	if type(variable) == str and re.match(r'(?i)(True|False)', variable.strip()):
@@ -145,7 +153,10 @@ def generateInventory(inventory_file, excelVar):
 	terminalWidth = info["terminal_width"]
 	logginBuffered = info["loggin_buffered"]
 	p2pSubnet = info["p2p_subnet"]
+	asnRule = info["asn_rule"]
+	spineBGPAsn = info["spine_bgp_asn"]
  
+	# print("spineBGPAsn = ", spineBGPAsn)
 	#Add Fabric info
 	inventory["all"]["children"]["FABRIC"]["children"][fabric_name]["children"]["PODS"] = getFabricInventory(inventory_file, fabric_name, excelVar)
 
@@ -165,9 +176,21 @@ def generateInventory(inventory_file, excelVar):
 	switches = pd.read_excel(inventory_file, header=headerRow, sheet_name=sheetName)[[spineCol, spinePortCol, spineIpCol, leafCol, leafPortCol, leafIpCol]].dropna(axis=0)
 
 	portMap = {}
+	topologyInterfaces = {} ##### eve-ng, pnetlab 포톨로지파일 생성용 데이터
 
 	for idx, switch in switches.iterrows():
-		
+		id = idx + 1
+		topologyInterfaces.setdefault(id, 
+			{
+				"START": switch[spineCol],
+				"SPORT": switch[spinePortCol],
+				"S_IP": switch[spineIpCol], 
+				"END": switch[leafCol],
+				"EPORT": switch[leafPortCol],
+				"E_IP": switch[leafIpCol]
+			}
+		)
+  
 		##### P2P S #####  
 		## spine switch 정리
 		p = re.compile(spinePrefix)
@@ -214,11 +237,17 @@ def generateInventory(inventory_file, excelVar):
    
 		##### port channell E #####	
     
-    
+	# print(topologyInterfaces)
+	##### eve-ng, pnetlab 포톨로지파일 생성용 데이터 생성 S ######
+	with BlankNone(), open("./inventory/topologyInterfaces.yml", "w") as inv:
+		inv.write(yaml.dump(topologyInterfaces, sort_keys=False))
+		inv.close()
+  ##### eve-ng, pnetlab 포톨로지파일 생성용 데이터 생성 E ######
+  
 	##### port map 정보 로드 E #####
 
 	## 기본변수 로드
-	with open("./excelEnvriment.json", "r", encoding='utf8') as f:
+	with open(resource_path("./excelEnvriment.json"), "r", encoding='utf8') as f:
 		excelVar = json.load(f)
 		f.close()
   
@@ -246,6 +275,18 @@ def generateInventory(inventory_file, excelVar):
 		hostname = switch[hostNameCol]
 		mgmt = switch[mgmtCol]
 		loop0 = switch[loopback0Col]
+		spinePrefix = excelVar["spine"]["prefix"]
+
+		##### spine ip 체크 , leaf 일때 bgp underlay ip ??
+		spines = []
+		# print(topologyInterfaces)
+		if switch[typeCol] != "Spine":
+			for id in topologyInterfaces:
+				p = re.compile(spinePrefix)
+				if hostname == topologyInterfaces[id]["END"] and (p.match(str(topologyInterfaces[id]["START"]))):
+					hn = topologyInterfaces[id]["START"]
+					ip = topologyInterfaces[id]["S_IP"] if "/" not in topologyInterfaces[id]["S_IP"] else topologyInterfaces[id]["S_IP"].split("/")[0]
+					spines.append({ "HOSTNAME": hn, "IP": ip })
 		
 		data.setdefault(
 			hostname,  {
@@ -260,9 +301,11 @@ def generateInventory(inventory_file, excelVar):
 						"LOOPBACK0": loop0,
 						"LOOPBACK1": str(switch[loop1Col]) + "/32" if switch[loop1Col] != "" else "",
 						"PERMIT_IP": str(ipaddress.IPv4Interface(str(switch[loop1Col]) + "/24").network) if switch[loop1Col] != "" else "",					
-						"INTERFACES": portMap[hostname]["INTERFACES"],
-						"ETC_PORTS": portMap[hostname]["ETC_PORTS"],
+						"INTERFACES": portMap[hostname]["INTERFACES"] if hostname in portMap else "",
+						"ETC_PORTS": portMap[hostname]["ETC_PORTS"] if hostname in portMap else "",
 						"BGP_ASN": int(switch[bgpAsnCol]) if switch[typeCol] == "Spine" else switch[bgpAsnCol],
+						"SPINE_BGP_ASN": spineBGPAsn,
+						"SPINES": spines,
 						"ID": switch[idCol],
 						"TYPE": switch[typeCol],
 						"P2P_SUBNET": p2pSubnet
