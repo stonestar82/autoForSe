@@ -8,3 +8,4 @@ build/
 *.pptx
 __pycache__/
 log/
+*.log
