@@ -14,7 +14,6 @@ from datetime import datetime
 from openpyxl import load_workbook
 from generators.BlankNone import *
 from generators.generateInventory import generateInventory 
-from async_tkinter_loop import async_handler, async_mainloop
 
 class App:
 	def exec(self):

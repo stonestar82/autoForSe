@@ -6,7 +6,6 @@ from openpyxl import load_workbook
 from operator import eq
 import pandas as pd
 from jinja2 import Template
-from PIL import Image, ImageFont, ImageDraw
 
 def resource_path(relative_path):
 	try:

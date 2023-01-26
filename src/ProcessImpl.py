@@ -16,8 +16,7 @@ from openpyxl import load_workbook
 from generators.BlankNone import *
 from generators.generateInventory import generateInventory 
 from operator import eq
-import zipfile, collections, shutil
-import pprint
+import zipfile, collections, shutil, platform
 from nornir.core.plugins.connections import ConnectionPluginRegister
 from nornir_netmiko.connections import Netmiko
 
@@ -28,8 +27,13 @@ ConnectionPluginRegister.register("netmiko", Netmiko)
 class ProcessImpl():
 	def __init__(self):
   
-		self.db = "./db/db.xlsx"
-		self.inventory = "./inventory.xlsx"
+		if eq(platform.system().lower(), "windows"):
+			self.path = "./"
+		else:
+			self.path = os.path.sep.join(sys.argv[0].split(os.path.sep)[:-1])
+
+		self.db = self.path + "db/db.xlsx"
+		self.inventory = self.path + "inventory.xlsx"
 		self.lastConfigGen = "" ## 마지막으로 실행한 config 생성 session
 		self.fullSession = {"fullv4":["init", "base", "loop0", "p2pip", "bgpv4", "etcport", "vxlan"] , "fullv6": ["init", "base", "loop0", "p2pipv6", "bgpv6", "etcport", "vxlan"]}
 		self.sessions = list(set(self.fullSession["fullv4"] + self.fullSession["fullv6"]))
