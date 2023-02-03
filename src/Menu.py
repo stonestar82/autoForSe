@@ -1,5 +1,5 @@
 from operator import ne, eq
-from src.ProcessImpl import *
+from src.ProcessAuto import ProcessAuto
 
 class Menu():
 	def __init__(self, process):

@@ -1,11 +1,11 @@
 from src.Menu import Menu
-from src.ProcessImpl import *
+from src.ProcessAuto import ProcessAutoImpl
 
 
 
 
 def main():
-	menu = Menu(ProcessImpl())
+	menu = Menu(ProcessAutoImpl())
 	menu.tabMenu()
 
 main()

@@ -20,19 +20,18 @@ from generators.BlankNone import *
 from generators.generateInventory import generateInventory 
 from operator import eq
 import zipfile
-from src.ProcessImpl import ProcessImpl
+from src.ProcessLab import ProcessLab
+from src.ProcessPM import ProcessPM
 
 
-obj = ProcessImpl()
+# obj = ProcessLab()
 
-now = datetime.now()
-obj.log(now=now, desc="D1-Spine-01 init config admin/admin 배포 \n", cfgBackUp=True)
-obj.log(now=now, desc="D1-Spine-02 init config admin/admin 배포 \n", cfgBackUp=True)
-obj.log(now=now, desc="D1-Spine-02 init config admin/admin 배포 \n", cfgBackUp=True)
-obj.log(now=now, desc="D1-Leaf-01 init config admin/admin 배포 \n", cfgBackUp=True)
-obj.log(now=now, desc="D1-Leaf-02 init config admin/admin 배포 \n", cfgBackUp=True)
-obj.log(now=now, desc="D1-Leaf-03 init config admin/admin 배포 \n", cfgBackUp=True)
-obj.log(now=now, desc="D1-Leaf-04 init config admin/admin 배포 \n", cfgBackUp=True)
-obj.log(now=now, desc="D1-BL-01 init config admin/admin 배포 \n", cfgBackUp=True)
-obj.log(now=now, desc="D1-BL-02 init config admin/admin 배포 \n", cfgBackUp=True)
 
+# obj.sshConnectTest(host="192.168.1.111", user="root", pw="rkqtn!23", port=22)
+# obj.labOSAppend(osVersion="veos-4.28.5.1M", host="192.168.1.112", user="root", pw="rkqtn!23", port=22)
+# obj.labOSAppend(vendor="arista", osVersion="veos-4.28.4M", host="192.168.1.113", user="root", pw="rkqtn!23", port=22)
+# obj.getLabOsList("arista")
+
+pm = ProcessPM()
+# pm.showtechToReport()
+pm.showToData("230203122905")

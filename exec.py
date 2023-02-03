@@ -1,6 +1,7 @@
 import asyncio
 from src.UI import UI
-from src.ProcessImpl import ProcessImpl
+from src.ProcessAuto import ProcessAuto
+from src.ProcessLab import ProcessLab
 import tkinter as tk
 from tkinter import ttk, messagebox
 from tkinter import *
@@ -17,6 +18,6 @@ from generators.generateInventory import generateInventory
 
 class App:
 	def exec(self):
-		self.window = UI(asyncio, ProcessImpl())
+		self.window = UI(asyncio, ProcessAuto(), ProcessLab())
 
 App().exec()

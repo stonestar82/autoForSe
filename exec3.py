@@ -1,6 +1,6 @@
 import asyncio
 from src.UI3 import UI3
-from src.ProcessImpl import ProcessImpl
+from src.ProcessAuto import ProcessAuto
 import tkinter as tk
 from tkinter import ttk, messagebox
 from tkinter import *
@@ -17,7 +17,7 @@ from generators.generateInventory import generateInventory
 
 class App:
 	def exec(self):
-		self.window = UI3(asyncio, ProcessImpl())
+		self.window = UI3(asyncio, ProcessAutoImpl())
 		# await self.window.show();
 
 App().exec()

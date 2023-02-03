@@ -1,0 +1,6 @@
+1. var 엑셀내용이랑 템플릿 변수 통일
+2. ping 실패시 어떤 인터페이스 인지
+3. lab 생성시 버전 선택 
+4. 초기화 세션 템플릿 추가
+5. 특정장비 stp 모드 선택
+6. 초기화에 aaa authorization exec default local 추가

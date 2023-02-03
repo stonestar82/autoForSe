@@ -20,21 +20,23 @@ from generators.BlankNone import *
 from generators.generateInventory import generateInventory 
 from operator import eq
 import zipfile
-from src.ProcessImpl import ProcessImpl
+from src.ProcessAuto import ProcessAuto
+from src.ProcessLab import ProcessLab
 from tkinter.messagebox import askyesno
 import platform
 
 class UI():
-	def __init__(self, asyncio=asyncio, process=ProcessImpl):
+	def __init__(self, asyncio=asyncio, processAuto=ProcessAuto, processLab=ProcessLab):
 		self.asyncio = asyncio
-		self.process = process
+		self.processAuto = processAuto
+		self.processLab = processLab
 		self.loop = self.asyncio.get_event_loop()
 		# if platform.system()=='Windows':
 		# 	asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 		self.root = tk.Tk()
 		self.root.title("i-Cloud CO.,LTD")
 		self.root.iconbitmap(self.resource_path("icloud.ico"))
-		self.root.geometry("640x700+600+100") ## w, h, x, y
+		self.root.geometry("640x800+600+100") ## w, h, x, y
 		self.root.resizable(False, False)
   
 		self.db = "./db/db.xlsx"
@@ -50,9 +52,11 @@ class UI():
 			self.leafSize.append(i)
    
 		self.ramSize = [1024, 2048, 3072, 4096]
+		self.switchIcon = ["AristaSW.png", "c_switch_blue.png", "Switch Blue.png", "Router Blue.png", "Router.png", "NI2_L3switch.png", "NI2_Switch.png"]
 		self.lastConfigGen = "" ## 마지막으로 실행한 config 생성 session
-		self.fullSession = {"fullv4":["init", "base", "loop0", "p2pip", "bgpv4", "etcport", "vxlan"] , "fullv6": ["init", "base", "loop0", "p2pipv6", "bgpv6", "etcport", "vxlan"]}
+		self.fullSession = {"fullv4":["init", "base", "loop0", "p2pip", "bgpv4", "etcport", "vxlan", "fullv4"] , "fullv6": ["init", "base", "loop0", "p2pipv6", "bgpv6", "etcport", "vxlan", "fullv6"]}
 		self.sessions = list(set(self.fullSession["fullv4"] + self.fullSession["fullv6"]))
+		self.vendors = ["arista"]
   
 		self.ymlInit()
 		self.norInit()
@@ -91,7 +95,7 @@ class UI():
 		##### 상태 체크 E #####
 
 		##### tab 구현 S #####
-		self.notebook = ttk.Notebook(self.root, width=620, height=400, )
+		self.notebook = ttk.Notebook(self.root, width=620, height=500, )
 		self.notebook.pack()
   
 	
@@ -163,7 +167,7 @@ class UI():
 
 		##### topology
 		self.topologyFrame = ttk.Frame(self.root)
-		self.notebook.add(self.topologyFrame, text=" TOPOLOGY ")
+		self.notebook.add(self.topologyFrame, text=" LAB-TOPOLOGY ")
   
   
 		self.topologyLabel = ttk.Label(self.topologyFrame, text="이름(영문) : ")
@@ -175,17 +179,18 @@ class UI():
 		self.versionLabel = ttk.Label(self.topologyFrame, text="버전 : ")
 		self.versionLabel.grid(row=1, column=1, padx=(8, 8), pady=(8, 8))
 		self.version = StringVar()
+		self.version.set("veos-4.27.4.1M-noztp")
 		self.versionTextBox = ttk.Entry(self.topologyFrame, width=40, textvariable=self.version)
 		self.versionTextBox.grid(row=1, column=2, padx=(8, 8), pady=(8, 8))
 
-		self.ethernetLabel = ttk.Label(self.topologyFrame, text="ethernet 개수 : ")
+		self.ethernetLabel = ttk.Label(self.topologyFrame, text="Ethernet 개수 : ")
 		self.ethernetLabel.grid(row=2, column=1, padx=(8, 8), pady=(8, 8))
 		# self.ethernet = StringVar()
 		self.ethernetComboBox = ttk.Combobox(self.topologyFrame, width=38, values=self.ethernetSize, state="readonly")
-		self.ethernetComboBox.current(5)
+		self.ethernetComboBox.current(0)
 		self.ethernetComboBox.grid(row=2, column=2, padx=(8, 8), pady=(8, 8))
   
-		self.cpuLabel = ttk.Label(self.topologyFrame, text="cpu 개수 : ")
+		self.cpuLabel = ttk.Label(self.topologyFrame, text="CPU 개수 : ")
 		self.cpuLabel.grid(row=3, column=1)
 		# self.cpu = StringVar()
 		self.cpuComboBox = ttk.Combobox(self.topologyFrame, width=38, values=self.cpuSize, state="readonly")
@@ -193,20 +198,34 @@ class UI():
 		self.cpuComboBox.grid(row=3, column=2, padx=(8, 8), pady=(8, 8))
   
 		
-		self.ramLabel = ttk.Label(self.topologyFrame, text="ram 크기 : ")
+		self.ramLabel = ttk.Label(self.topologyFrame, text="RAM 크기 : ")
 		self.ramLabel.grid(row=4, column=1, padx=(8, 8), pady=(8, 8))
 		# self.ram = StringVar()
 		self.ramComboBox = ttk.Combobox(self.topologyFrame, width=38, values=self.ramSize, state="readonly")
 		self.ramComboBox.current(3)
 		self.ramComboBox.grid(row=4, column=2, padx=(8, 8), pady=(8, 8))
   
-		self.cloudLabel = ttk.Label(self.topologyFrame, text="구름(?) 생성 : ")
+		self.cloudLabel = ttk.Label(self.topologyFrame, text="Cloud1 네트워크 생성 : ")
 		self.cloudLabel.grid(row=5, column=1, padx=(8, 8), pady=(8, 8))
 		self.cloud = IntVar()
 		self.cloudCheckBox = ttk.Checkbutton(self.topologyFrame, width=38, variable=self.cloud)
 		self.cloudCheckBox.grid(row=5, column=2, padx=(8, 8), pady=(8, 8))
   
-		self.topologyButton = tk.Button(self.topologyFrame, text="토폴로지 생성", width=18, command=lambda: self.loop.create_task(self.createTopology()))
+		self.configIncludeLabel = ttk.Label(self.topologyFrame, text="Config 포함 : ")
+		self.configIncludeLabel.grid(row=6, column=1, padx=(8, 8), pady=(8, 8))
+		self.configInclude = IntVar()
+		self.configInclude.set(1)
+		self.configIncludeCheckBox = ttk.Checkbutton(self.topologyFrame, width=38, variable=self.configInclude)
+		self.configIncludeCheckBox.grid(row=6, column=2, padx=(8, 8), pady=(8, 8))
+  
+  
+		self.switchIconLabel = ttk.Label(self.topologyFrame, text="Switch Icon : ")
+		self.switchIconLabel.grid(row=7, column=1)
+		self.switchIconComboBox = ttk.Combobox(self.topologyFrame, width=38, values=self.switchIcon, state="readonly")
+		self.switchIconComboBox.current(0)
+		self.switchIconComboBox.grid(row=7, column=2, padx=(8, 8), pady=(8, 8))
+  
+		self.topologyButton = tk.Button(self.topologyFrame, text="Lab Topology 생성", width=18, command=lambda: self.loop.create_task(self.createTopology()))
 		self.topologyButton.grid(row=0, column=3, sticky=tk.W, padx=(8, 8), pady=(8, 8))
   
   
@@ -239,14 +258,14 @@ class UI():
   
 		##### 핑테스트
 		self.pingTestFrame = ttk.Frame(self.root)
-		self.notebook.add(self.pingTestFrame, text=" PING TEST ")
+		self.notebook.add(self.pingTestFrame, text=" P2P PING TEST ")
 		
-		self.pingTestButton = tk.Button(self.pingTestFrame, text="PING TEST", width=18, command=lambda: self.loop.create_task(self.pingTest()))
+		self.pingTestButton = tk.Button(self.pingTestFrame, text="P2P PING TEST", width=18, command=lambda: self.loop.create_task(self.pingTest()))
 		self.pingTestButton.grid(row=0, column=3, sticky=tk.W, padx=(8, 8), pady=(8, 8))
   
 		##### 간편 topology 생성
 		self.simpleTopologyFrame = ttk.Frame(self.root)
-		self.notebook.add(self.simpleTopologyFrame, text=" 간편 TOPOLOGY ")
+		self.notebook.add(self.simpleTopologyFrame, text=" 간편 LAB-TOPOLOGY ")
   
   
 		self.simpleTopologyLabel = ttk.Label(self.simpleTopologyFrame, text="이름(영문) : ")
@@ -258,63 +277,116 @@ class UI():
 		self.simpleVersionLabel = ttk.Label(self.simpleTopologyFrame, text="버전 : ")
 		self.simpleVersionLabel.grid(row=1, column=1, padx=(8, 8), pady=(8, 8))
 		self.simpleVersion = StringVar()
+		self.simpleVersion.set("veos-4.27.4.1M-noztp")
 		self.simpleVersionTextBox = ttk.Entry(self.simpleTopologyFrame, width=40, textvariable=self.simpleVersion)
 		self.simpleVersionTextBox.grid(row=1, column=2, padx=(8, 8), pady=(8, 8))
 
-		self.simpleSpinePrefixLabel = ttk.Label(self.simpleTopologyFrame, text="spine prefix : ")
+		self.simpleSpinePrefixLabel = ttk.Label(self.simpleTopologyFrame, text="Spine Prefix : ")
 		self.simpleSpinePrefixLabel.grid(row=2, column=1, padx=(8, 8), pady=(8, 8))
 		self.simpleSpinePrefix = StringVar()
+		self.simpleSpinePrefix.set("Spine-")
 		self.simpleSpinePrefixTextBox = ttk.Entry(self.simpleTopologyFrame, width=40, textvariable=self.simpleSpinePrefix)
 		self.simpleSpinePrefixTextBox.grid(row=2, column=2, padx=(8, 8), pady=(8, 8))
   
-		self.simpleSpineLabel = ttk.Label(self.simpleTopologyFrame, text="spine 개수 : ")
+		self.simpleSpineLabel = ttk.Label(self.simpleTopologyFrame, text="Spine 개수 : ")
 		self.simpleSpineLabel.grid(row=3, column=1, padx=(8, 8), pady=(8, 8))
 		# self.simpleSpine = StringVar()
 		self.simpleSpineComboBox = ttk.Combobox(self.simpleTopologyFrame, width=38, values=self.spineSize, state="readonly")
 		self.simpleSpineComboBox.current(0)
 		self.simpleSpineComboBox.grid(row=3, column=2, padx=(8, 8), pady=(8, 8))
   
-		self.simpleLeafPrefixLabel = ttk.Label(self.simpleTopologyFrame, text="leaf prefix : ")
+		self.simpleLeafPrefixLabel = ttk.Label(self.simpleTopologyFrame, text="Leaf Prefix : ")
 		self.simpleLeafPrefixLabel.grid(row=4, column=1, padx=(8, 8), pady=(8, 8))
 		self.simpleLeafPrefix = StringVar()
+		self.simpleLeafPrefix.set("Leaf-")
 		self.simpleLeafPrefixTextBox = ttk.Entry(self.simpleTopologyFrame, width=40, textvariable=self.simpleLeafPrefix)
 		self.simpleLeafPrefixTextBox.grid(row=4, column=2, padx=(8, 8), pady=(8, 8))
   
-		self.simpleLeafLabel = ttk.Label(self.simpleTopologyFrame, text="leaf 개수 : ")
+		self.simpleLeafLabel = ttk.Label(self.simpleTopologyFrame, text="Leaf 개수 : ")
 		self.simpleLeafLabel.grid(row=5, column=1, padx=(8, 8), pady=(8, 8))
 		# self.simpleLeaf = StringVar()
 		self.simpleLeafComboBox = ttk.Combobox(self.simpleTopologyFrame, width=38, values=self.leafSize, state="readonly")
 		self.simpleLeafComboBox.current(6)
 		self.simpleLeafComboBox.grid(row=5, column=2, padx=(8, 8), pady=(8, 8))
   
-		self.simpleEthernetLabel = ttk.Label(self.simpleTopologyFrame, text="ethernet 개수 : ")
+		self.simpleEthernetLabel = ttk.Label(self.simpleTopologyFrame, text="Ethernet 개수 : ")
 		self.simpleEthernetLabel.grid(row=6, column=1)
 		self.simpleEthernetComboBox = ttk.Combobox(self.simpleTopologyFrame, width=38, values=self.ethernetSize, state="readonly")
-		self.simpleEthernetComboBox.current(5)
+		self.simpleEthernetComboBox.current(0)
 		self.simpleEthernetComboBox.grid(row=6, column=2, padx=(8, 8), pady=(8, 8))
   
-		self.simpleCpuLabel = ttk.Label(self.simpleTopologyFrame, text="cpu 개수 : ")
+		self.simpleCpuLabel = ttk.Label(self.simpleTopologyFrame, text="CPU 개수 : ")
 		self.simpleCpuLabel.grid(row=7, column=1)
 		self.simpleCpuComboBox = ttk.Combobox(self.simpleTopologyFrame, width=38, values=self.cpuSize, state="readonly")
 		self.simpleCpuComboBox.current(1)
 		self.simpleCpuComboBox.grid(row=7, column=2, padx=(8, 8), pady=(8, 8))
   
 		
-		self.simpleRamLabel = ttk.Label(self.simpleTopologyFrame, text="ram 크기 : ")
+		self.simpleRamLabel = ttk.Label(self.simpleTopologyFrame, text="RAM 크기 : ")
 		self.simpleRamLabel.grid(row=8, column=1)
 		self.simpleRamComboBox = ttk.Combobox(self.simpleTopologyFrame, width=38, values=self.ramSize, state="readonly")
 		self.simpleRamComboBox.current(3)
 		self.simpleRamComboBox.grid(row=8, column=2, padx=(8, 8), pady=(8, 8))
   
-		self.simpleCloudLabel = ttk.Label(self.simpleTopologyFrame, text="구름(?) 생성 : ")
+		self.simpleCloudLabel = ttk.Label(self.simpleTopologyFrame, text="Cloud1 네트워크 생성 : ")
 		self.simpleCloudLabel.grid(row=9, column=1, padx=(8, 8), pady=(8, 8))
 		self.simpleCloud = IntVar()
 		self.simpleCloudCheckBox = ttk.Checkbutton(self.simpleTopologyFrame, width=38, variable=self.simpleCloud)
 		self.simpleCloudCheckBox.grid(row=9, column=2, padx=(8, 8), pady=(8, 8))
   
-		self.simpleTopologyButton = tk.Button(self.simpleTopologyFrame, text="간편 토폴로지 생성", width=18, command=lambda: self.loop.create_task(self.createSimpleTopology()))
+		self.simpleSwitchIconLabel = ttk.Label(self.simpleTopologyFrame, text="Switch Icon : ")
+		self.simpleSwitchIconLabel.grid(row=10, column=1)
+		self.simpleSwitchIconComboBox = ttk.Combobox(self.simpleTopologyFrame, width=38, values=self.switchIcon, state="readonly")
+		self.simpleSwitchIconComboBox.current(0)
+		self.simpleSwitchIconComboBox.grid(row=10, column=2, padx=(8, 8), pady=(8, 8))
+
+
+  
+		self.simpleTopologyButton = tk.Button(self.simpleTopologyFrame, text="Lab Topology 생성", width=18, command=lambda: self.loop.create_task(self.createSimpleTopology()))
 		self.simpleTopologyButton.grid(row=0, column=3, sticky=tk.W, padx=(8, 8), pady=(8, 8))
   
+  
+		##### EVE-NG, PNET os 이미지 설정
+		self.labOsFrame = ttk.Frame(self.root)
+		self.notebook.add(self.labOsFrame, text=" LAB OS ")
+		
+		self.labOsVendorLabel = ttk.Label(self.labOsFrame, text="제조사 : ")
+		self.labOsVendorLabel.grid(row=0, column=1)
+		self.labOsVender = ttk.Combobox(self.labOsFrame, width=38, values=self.vendors, state="readonly")
+		self.labOsVender.current(0)
+		self.labOsVender.grid(row=0, column=2, padx=(8, 8), pady=(8, 8))
+  
+		self.labServerIpLabel = ttk.Label(self.labOsFrame, text="Lab Server IP : ")
+		self.labServerIpLabel.grid(row=1, column=1, padx=(8, 8), pady=(8, 8))
+		self.labServerIp = StringVar()
+		self.labServerIpTextBox = ttk.Entry(self.labOsFrame, width=40, textvariable=self.labServerIp)
+		self.labServerIpTextBox.grid(row=1, column=2, padx=(8, 8), pady=(8, 8))
+  
+		self.labServerIdLabel = ttk.Label(self.labOsFrame, text="Lab Server ID: ")
+		self.labServerIdLabel.grid(row=2, column=1, padx=(8, 8), pady=(8, 8))
+		self.labServerId = StringVar()
+		self.labServerIdTextBox = ttk.Entry(self.labOsFrame, width=40, textvariable=self.labServerId)
+		self.labServerIdTextBox.grid(row=2, column=2, padx=(8, 8), pady=(8, 8))
+  
+		self.labServerPwLabel = ttk.Label(self.labOsFrame, text="Lab Server PW: ")
+		self.labServerPwLabel.grid(row=3, column=1, padx=(8, 8), pady=(8, 8))
+		self.labServerPw = StringVar()
+		self.labServerPwTextBox = ttk.Entry(self.labOsFrame, width=40, textvariable=self.labServerPw)
+		self.labServerPwTextBox.grid(row=3, column=2, padx=(8, 8), pady=(8, 8))
+		self.labServerPwTextBox.config(show="*")
+  
+		self.labServerPortLabel = ttk.Label(self.labOsFrame, text="Lab Server SSH Port: ")
+		self.labServerPortLabel.grid(row=4, column=1, padx=(8, 8), pady=(8, 8))
+		self.labServerPort = StringVar()
+		self.labServerPort.set(22)
+		self.labServerPortTextBox = ttk.Entry(self.labOsFrame, width=40, textvariable=self.labServerPort)
+		self.labServerPortTextBox.grid(row=4, column=2, padx=(8, 8), pady=(8, 8))
+  
+		self.labOsListButton = tk.Button(self.labOsFrame, text="OS 목록", width=18, command=lambda: self.loop.create_task(self.getLabOsList()))
+		self.labOsListButton.grid(row=0, column=3, sticky=tk.W, padx=(8, 8), pady=(8, 8))
+  
+		self.labOsListButton = tk.Button(self.labOsFrame, text="Lab OS 추가", width=18, command=lambda: self.loop.create_task(self.appendLabOS()))
+		self.labOsListButton.grid(row=1, column=3, sticky=tk.W, padx=(8, 8), pady=(8, 8))
   
 		self.root.protocol("WM_DELETE_WINDOW", self.windowButtonClose)
 
@@ -339,10 +411,10 @@ class UI():
 		return os.path.join(base_path, relative_path)
   
 	def ymlInit(self):
-		self.process.ymlInit()
+		self.processAuto.ymlInit()
   
 	def norInit(self):
-		self.nr = self.process.norInit()
+		self.nr = self.processAuto.norInit()
   
 	def windowButtonClose(self):
 		try:
@@ -365,7 +437,7 @@ class UI():
 			pass
 		else:
 			self.gridReset()
-			self.nr = self.process.cleanConfigCall()
+			self.nr = self.processAuto.cleanConfigCall()
 		
 			for host in self.nr.inventory.hosts:
 				if host in self.nr.data.failed_hosts:
@@ -378,7 +450,7 @@ class UI():
 	async def getBackupConfigList(self):
 		self.gridReset()
   
-		sheet = self.process.getBackupConfigList()
+		sheet = self.processAuto.getBackupConfigList()
   
 		if sheet.iter_rows():
 			self.lastConfigGen = "backup"
@@ -409,7 +481,7 @@ class UI():
  
 		
 		self.gridReset()
-		self.nr = self.process.selectedConfigCall(item)
+		self.nr = self.processAuto.selectedConfigCall(item)
   
 		for host in self.nr.inventory.hosts:
 			if host in self.nr.data.failed_hosts:
@@ -419,7 +491,7 @@ class UI():
 
 			self.treeview.insert('', END, text='', values=(host, descDetail, datetime.now().strftime('%y-%m-%d %H:%M:%S')))
    
-		self.nr = self.process.norInit()
+		self.nr = self.processAuto.norInit()
 		
 		# print("done!!")
 	
@@ -428,22 +500,22 @@ class UI():
 		config 배포 호출
 		"""
 		
-		if not self.process.sendConfigCheck():
+		if not self.processAuto.sendConfigCheck():
 			messagebox.showwarning(title="warning", message="config 생성 후 사용하실 수 있습니다.")
 			return False
  
 		self.gridReset()
-		self.nr = self.process.sendConfigCall()
+		self.nr = self.processAuto.sendConfigCall()
   
 		for host in self.nr.inventory.hosts:
 			if host in self.nr.data.failed_hosts:
-				desc = self.process.getLastConfigGen() + " config 배포 실패"
+				desc = self.processAuto.getLastConfigGen() + " config 배포 실패"
 			else:
-				desc = self.process.getLastConfigGen() + " config 배포 완료"
+				desc = self.processAuto.getLastConfigGen() + " config 배포 완료"
 
 			self.treeview.insert('', END, text='', values=(host, desc, datetime.now().strftime('%y-%m-%d %H:%M:%S')))
    
-		self.nr = self.process.norInit()
+		self.nr = self.processAuto.norInit()
   
 	def gridReset(self):
 		"""
@@ -475,7 +547,7 @@ class UI():
    
    
 		nowDate = datetime.now().strftime('%y-%m-%d %H:%M:%S')
-		self.nr = self.process.backupConfigCall(memo)
+		self.nr = self.processAuto.backupConfigCall(memo)
 	
 
 		for host in self.nr.inventory.hosts:
@@ -494,11 +566,19 @@ class UI():
 		topology = self.topology.get()
 		ethernetCount = self.ethernetComboBox.get()
 		net = self.cloud.get()
+		icon = self.switchIconComboBox.get()
+		configInclude = self.configInclude.get()
   
 		if eq(net, 1):
 			net = True
 		else:
 			net = False
+   
+		if eq(configInclude, 1):
+			config = True
+		else:
+			config = False
+
 		# print("----------------------")
 		# print(cpu, version, ram, topology, ethernetCount)
   
@@ -511,6 +591,13 @@ class UI():
 			messagebox.showwarning(title="warning", message="버전을 입력해 주세요.")
 			self.versionTextBox.focus()
 			return False
+
+		if config:
+			session = self.processAuto.getLastConfigGen()
+			print("session = ", session)
+			if not session in self.sessions:
+				messagebox.showwarning(title="warning", message="Config 생성후 생성해주세요")
+				return False
 
 		# if eq("", ethernetCount):
 		# 	messagebox.showwarning(title="warning", message="ethernet 갯수를 입력해 주세요.")
@@ -529,7 +616,7 @@ class UI():
    
 		self.gridReset()
   
-		self.process.createTopology(topology=topology, cpu=cpu, ram=ram, version=version, ethernetCount=ethernetCount, net=net)
+		self.processAuto.createTopology(topology=topology, cpu=cpu, ram=ram, version=version, ethernetCount=ethernetCount, net=net, icon=icon, configInclude=configInclude)
   
 		self.treeview.insert('', END, text='', values=("topology", topology + "이(가) 생성되었습니다.", datetime.now().strftime('%y-%m-%d %H:%M:%S')))
   
@@ -545,7 +632,7 @@ class UI():
 		spinePrefix = self.simpleSpinePrefix.get()
 		leafPrefix = self.simpleLeafPrefix.get()
 		net = self.simpleCloud.get()
-  
+		icon = self.simpleSwitchIconComboBox.get()
 		if eq(net, 1):
 			net = True
 		else:
@@ -593,13 +680,13 @@ class UI():
    
 		self.gridReset()
   
-		self.process.createSimpleTopology(topology=topology, spinePrefix=spinePrefix, leafPrefix=leafPrefix, spinesCount=spineCount, leafsCount=leafCount, cpu=cpu, ram=ram, version=version, ethernetCount=ethernetCount, net=net)
+		self.processAuto.createSimpleTopology(topology=topology, spinePrefix=spinePrefix, leafPrefix=leafPrefix, spinesCount=spineCount, leafsCount=leafCount, cpu=cpu, ram=ram, version=version, ethernetCount=ethernetCount, net=net, icon=icon)
 		self.treeview.insert('', END, text='', values=("간편 topology", topology + "이(가) 생성되었습니다.", datetime.now().strftime('%y-%m-%d %H:%M:%S')))
 		
     
 
 	async def createConfig(self, session):
-		self.nr = self.process.createConfig(session)
+		self.nr = self.processAuto.createConfig(session)
    
 		self.gridReset()
    
@@ -610,7 +697,7 @@ class UI():
 	async def statusCheckCall(self):
    
 		self.gridReset()
-		statusResult = self.process.statusCheckCall()
+		statusResult = self.processAuto.statusCheckCall()
 
 		for host in statusResult:
 			try:
@@ -629,7 +716,7 @@ class UI():
 	async def pingTest(self):
 		self.gridReset()
   
-		pingTestResult = self.process.pingTestCall()
+		pingTestResult = self.processAuto.pingTestCall()
   
 		for host in pingTestResult:
 			result = dict(pingTestResult[host][0].result)
@@ -637,3 +724,69 @@ class UI():
 			fail = result["fail"]
 			down = result["down"]
 			self.treeview.insert('', END, text='', values=(host, f'ping test !! pass: {success}, fail: {fail}, down: {down}', datetime.now().strftime('%y-%m-%d %H:%M:%S')))
+
+	async def getLabOsList(self):
+		vendor = self.labOsVender.get()
+		osList, result = self.processLab.getLabOsList(vendor)
+		self.gridReset()
+  
+		if eq(result, 0):
+			messagebox.showwarning(title="warning", message="파일서버가 접속되지 않습니다. 확인후 다시 시도해 주세요.")
+			return False
+
+		if not osList:
+			messagebox.showwarning(title="warning", message="os 파일이 없습니다. 확인후 다시 시도해 주세요.")
+			return False
+  
+		for os in osList:
+			os = str(os).replace(".qcow2", "")
+			self.treeview.insert('', END, text='', values=(vendor, os, datetime.now().strftime('%y-%m-%d %H:%M:%S')))
+   
+	async def appendLabOS(self):
+		ip = self.labServerIp.get()
+		id = self.labServerId.get()
+		pw = self.labServerPw.get()
+		port = self.labServerPort.get()
+		iid = self.treeview.focus()
+  
+		if iid:
+			vendor = self.treeview.item(iid).get("values")[0]
+			osVersion = self.treeview.item(iid).get("values")[1]
+		else:
+			messagebox.showwarning(title="warning", message="선택된 OS 버전이 없습니다.")
+			return False
+ 
+		if eq(ip, ""):
+			messagebox.showwarning(title="warning", message="Lab Server IP를 입력해 주세요.")
+			self.labServerIpTextBox.focus()
+			return False
+
+ 
+		if eq(id, ""):
+			messagebox.showwarning(title="warning", message="Lab Server ID를 입력해 주세요.")
+			self.labServerIdTextBox.focus()
+			return False
+ 
+		if eq(pw, ""):
+			messagebox.showwarning(title="warning", message="Lab Server PW를 입력해 주세요.")
+			self.labServerPwTextBox.focus()
+			return False
+ 
+		if eq(port, ""):
+			messagebox.showwarning(title="warning", message="Lab Server SSH Port를 입력해 주세요.")
+			self.labServerPortTextBox.focus()
+			return False
+
+		print(vendor, osVersion)
+		
+		result, msg = self.processLab.labOSAppend(vendor=vendor, osVersion=osVersion, host=ip, user=id, pw=pw, port=port)
+
+		if eq(result, -1):
+			messagebox.showwarning(title="warning", message="Lab Server 접속에 실패하였습니다. IP/ID/PW 확인해주세요.")
+			return False
+		elif eq(result, -2):
+			messagebox.showwarning(title="warning", message=msg)
+			return False
+ 
+		self.gridReset()
+		self.treeview.insert('', END, text='', values=("LAB OS", f'{vendor} OS {osVersion} 추가 완료', datetime.now().strftime('%y-%m-%d %H:%M:%S')))

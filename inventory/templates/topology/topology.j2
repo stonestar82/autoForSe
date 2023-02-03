@@ -1,51 +1,60 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<lab name="{{ NAME }}" version="1" scripttimeout="300" password="" author="4" countdown="60" darkmode="" mode3d="" nogrid="" joinable="2" joinable_emails="4" openable="2" openable_emails="4" editable="2" editable_emails="4" multi_config_active="">
+<lab name="{{ NAME }}" version="1" scripttimeout="300" lock="0" author="4">
   <topology>
     <nodes>
-    {%for SPINE in SPINES %}
-      <node id="{{ SPINES[SPINE].ID }}" type="qemu" template="veos" config="0" config_script="config_veos.py" script_timeout="1200" config_data="" multi_config="W10=" delay="0" icon="AristaSW.png" image="{{ EOS_VERSION }}" left="{{ SPINES[SPINE].LEFT }}" name="{{ SPINE }}" top="{{ SPINES[SPINE].TOP }}" size="0" console="telnet" ethernet="{{ ETHERNET }}" nvram="1024" ram="{{ RAM }}" serial="0" idlepc="0x0" cpu="{{ CPU }}" cpulimit="{{ CPU }}" uuid="" firstmac="" first_nic="" qemu_options="-machine type=pc-1.0,accel=kvm -serial mon:stdio -nographic -display none -nodefconfig -rtc base=utc -boot order=d" qemu_version="2.4.0" qemu_arch="x86_64" qemu_nic="e1000" username="" password="" eth_format="" console_2nd="" map_port="" map_port_2nd="">
-      {% if NET %}
+    {%-for SPINE in SPINES%}
+      <node id="{{ SPINES[SPINE].ID }}" name="{{ SPINE }}" type="qemu" template="veos" image="{{ EOS_VERSION }}" console="telnet" cpu="{{ CPU }}" cpulimit="{{ CPU }}" ram="{{ RAM }}" ethernet="{{ ETHERNET }}" uuid="" qemu_options="-machine type=pc,accel=kvm -serial mon:stdio -nographic -display none -no-user-config -rtc base=utc -boot order=d" qemu_version="2.4.0" qemu_arch="x86_64" qemu_nic="e1000" delay="0" icon="AristaSW.png" config="{{ SPINES[SPINE].CONFIG }}" left="{{ SPINES[SPINE].LEFT }}" top="{{ SPINES[SPINE].TOP }}">
+      {%-if NET%}
         <interface id="0" name="Mgmt1" type="ethernet" network_id="9999"/>
-      {% endif%}
-      {% set idx = namespace(value=0) %}
-      {%for INTERFACE in INTERFACES %}
-        {% if (INTERFACES[INTERFACE].START == SPINE) %}
-          {% set idx.value = idx.value + 1 %}
-        <interface id="{{ idx.value }}" name="{{ INTERFACES[INTERFACE].SPORT }}" type="ethernet" network_id="{{ INTERFACE }}" style="" linkstyle="" color="" label="" linkcfg="" labelpos="" srcpos="" dstpos="" width="" fontsize=""/>
-        {% endif %}
-        {% if (INTERFACES[INTERFACE].END == SPINE) %}
-          {% set idx.value = idx.value + 1 %}
-        <interface id="{{ idx.value }}" name="{{ INTERFACES[INTERFACE].EPORT }}" type="ethernet" network_id="{{ INTERFACE }}" style="" linkstyle="" color="" label="" linkcfg="" labelpos="" srcpos="" dstpos="" width="" fontsize=""/>
-        {% endif %}
-      {%endfor%}
+      {%-endif%}
+      {%-set idx = namespace(value=0)%}
+      {%-for INTERFACE in INTERFACES%}
+        {%-if (INTERFACES[INTERFACE].START == SPINE)%}
+          {%-set idx.value = idx.value + 1%}
+        <interface id="{{ idx.value }}" name="{{ INTERFACES[INTERFACE].SPORT }}" type="ethernet" network_id="{{ INTERFACE }}"/>
+        {%-endif%}
+        {%-if (INTERFACES[INTERFACE].END == SPINE)%}
+          {%-set idx.value = idx.value + 1%}
+        <interface id="{{ idx.value }}" name="{{ INTERFACES[INTERFACE].EPORT }}" type="ethernet" network_id="{{ INTERFACE }}"/>
+        {%-endif%}
+      {%-endfor%}
       </node>
-    {%endfor%}
-    {%for LEAF in LEAFS %}
-      <node id="{{ LEAFS[LEAF].ID }}" type="qemu" template="veos" config="0" config_script="config_veos.py" script_timeout="1200" config_data="" multi_config="W10=" delay="0" icon="AristaSW.png" image="{{ EOS_VERSION }}" left="{{ LEAFS[LEAF].LEFT }}" name="{{ LEAF }}" top="{{ LEAFS[LEAF].TOP }}" size="0" console="telnet" ethernet="{{ ETHERNET }}" nvram="1024" ram="{{ RAM }}" serial="0" idlepc="0x0" cpu="{{ CPU }}" cpulimit="{{ CPU }}" uuid="" firstmac="" first_nic="" qemu_options="-machine type=pc-1.0,accel=kvm -serial mon:stdio -nographic -display none -nodefconfig -rtc base=utc -boot order=d" qemu_version="2.4.0" qemu_arch="x86_64" qemu_nic="e1000" username="" password="" eth_format="" console_2nd="" map_port="" map_port_2nd="">
-      {% if NET %}
+    {%-endfor%}
+    {%-for LEAF in LEAFS%}
+      <node id="{{ LEAFS[LEAF].ID }}" name="{{ LEAF }}" type="qemu" template="veos" image="{{ EOS_VERSION }}" console="telnet" cpu="{{ CPU }}" cpulimit="{{ CPU }}" ram="{{ RAM }}" ethernet="{{ ETHERNET }}" uuid="" qemu_options="-machine type=pc,accel=kvm -serial mon:stdio -nographic -display none -no-user-config -rtc base=utc -boot order=d" qemu_version="2.4.0" qemu_arch="x86_64" qemu_nic="e1000" delay="0" icon="AristaSW.png" config="{{ LEAFS[LEAF].CONFIG }}" left="{{ LEAFS[LEAF].LEFT }}" top="{{ LEAFS[LEAF].TOP }}">
+      {%-if NET%}
         <interface id="0" name="Mgmt1" type="ethernet" network_id="9999"/>
-      {% endif%}
-      {% set idx = namespace(value=0) %}
-      {%for INTERFACE in INTERFACES %}
-        {% if (INTERFACES[INTERFACE].START == LEAF) %}
-          {% set idx.value = idx.value + 1 %}
-        <interface id="{{ idx.value }}" name="{{ INTERFACES[INTERFACE].SPORT }}" type="ethernet" network_id="{{ INTERFACE }}" style="" linkstyle="" color="" label="" linkcfg="" labelpos="" srcpos="" dstpos="" width="" fontsize=""/>
-        {% endif %}
-        {% if (INTERFACES[INTERFACE].END == LEAF) %}
-          {% set idx.value = idx.value + 1 %}
-        <interface id="{{ idx.value }}" name="{{ INTERFACES[INTERFACE].EPORT }}" type="ethernet" network_id="{{ INTERFACE }}" style="" linkstyle="" color="" label="" linkcfg="" labelpos="" srcpos="" dstpos="" width="" fontsize=""/>
-        {% endif %}
-      {%endfor%}
+      {%-endif%}
+      {%-set idx = namespace(value=0)%}
+      {%-for INTERFACE in INTERFACES%}
+        {%-if (INTERFACES[INTERFACE].START == LEAF)%}
+          {%-set idx.value = idx.value + 1%}
+        <interface id="{{ idx.value }}" name="{{ INTERFACES[INTERFACE].SPORT }}" type="ethernet" network_id="{{ INTERFACE }}"/>
+        {%-endif%}
+        {%-if (INTERFACES[INTERFACE].END == LEAF)%}
+          {%-set idx.value = idx.value + 1%}
+        <interface id="{{ idx.value }}" name="{{ INTERFACES[INTERFACE].EPORT }}" type="ethernet" network_id="{{ INTERFACE }}"/>
+        {%-endif%}
+      {%-endfor%}
       </node>
-    {%endfor%}
+    {%-endfor%}
     </nodes>
     <networks>
-    {% if NET %}
+    {%-if NET%}
       <network id="9999" type="pnet1" name="Net" left="50" top="50" visibility="1"/>
-    {% endif%}
-    {%for INTERFACE in INTERFACES %}
-      <network id="{{ INTERFACE }}" type="bridge" name="{{ INTERFACES[INTERFACE].START }}{{ INTERFACES[INTERFACE].SPORT }}_{{ INTERFACES[INTERFACE].END }}{{ INTERFACES[INTERFACE].EPORT }}" left="0" top="0" visibility="0" icon="lan.png" size=""/>
-    {%endfor%}
+    {%-endif%}
+    {%-for INTERFACE in INTERFACES%}
+      <network id="{{ INTERFACE }}" type="bridge" name="{{ INTERFACES[INTERFACE].START }}{{ INTERFACES[INTERFACE].SPORT }}_{{ INTERFACES[INTERFACE].END }}{{ INTERFACES[INTERFACE].EPORT }}" left="0" top="0" visibility="0"/>
+    {%-endfor%}
     </networks>
   </topology>
+  {%-if CONFIGS%}
+  <objects>
+    <configs>
+      {%-for CONFIG in CONFIGS%}
+      <config id="{{ CONFIG }}">{{ CONFIGS[CONFIG] }}</config>
+      {%-endfor%}
+    </configs>
+  </objects>
+  {%-endif%}  
 </lab>

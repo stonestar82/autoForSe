@@ -1,5 +1,4 @@
-import yaml, json
-import asyncio, os, sys
+import yaml, json, base64, asyncio, os, sys
 from nornir import InitNornir
 from nornir.plugins import *
 from nornir.plugins.inventory import *
@@ -24,7 +23,7 @@ from nornir_netmiko.connections import Netmiko
 ###### pyinstaller 에서 netmiko 플러그인없이 빌드되는 경우가 있는듯
 ConnectionPluginRegister.register("netmiko", Netmiko)
 
-class ProcessImpl():
+class ProcessAuto():
 	def __init__(self):
   
 		if eq(platform.system().lower(), "windows"):
@@ -202,7 +201,7 @@ class ProcessImpl():
   
 		return self.nr
 
-	def createTopology(self, topology, cpu, ram, ethernetCount, version, net):
+	def createTopology(self, topology, cpu, ram, ethernetCount, version, net, icon, configInclude):
 
 		spineSwitchs = {}
 		leafSwitchs = {}
@@ -233,7 +232,7 @@ class ProcessImpl():
 		iconWidth = 65
   
 		spineIdx = 0
-		leafIdx = 0
+		leafIdx = spinesCount
   
 		## spine icon 시작 위치값
 		# s_start = int(width / spinesCount - space / spinesCount)
@@ -255,26 +254,41 @@ class ProcessImpl():
 		if l_start < 10:
 			l_start = 10
   
+		configs = {}
 		for host in hosts:
 			hostType = hosts[host]["data"]["TYPE"]
 			# print("host type = ", host)
+			###### config 포함시 base64로 인코딩 처리
+			if configInclude:
+				# print("config 포함")
+				with open(f"./inventory/config/{host}.cfg") as r:
+					config = base64.b64encode(r.read().encode('ascii')).strip().decode('utf-8')
+					configState = 1
+					r.close()
+     
+			else:
+				configState = 0
+				
 			if (hostType.upper() == "SPINE"):
 				spineIdx = spineIdx + 1
 				spineSwitchs[host]= {
 															"ID": spineIdx,
 															"LEFT": s_start + (spineIdx * space),
-															"TOP": spineTopMargin
+															"TOP": spineTopMargin,
+															"CONFIG": configState
 														}
-				
+				configs.setdefault(spineIdx, config)
 			else:
 				leafIdx = leafIdx + 1
 				leafSwitchs[host]= {
-															"ID": leafIdx + spinesCount,
+															"ID": leafIdx,
 															"LEFT": l_start + (leafIdx * leafSpace),
-															"TOP": leafTopMargin
+															"TOP": leafTopMargin,
+															"CONFIG": configState
 														}
-    
+				configs.setdefault(leafIdx, config)
   
+		# print(configs)
 		with open("./inventory/topologyInterfaces.yml") as f:
 			topologyInterfaces = yaml.load(f, Loader=yaml.FullLoader)
 			f.close()
@@ -289,7 +303,9 @@ class ProcessImpl():
 			"SPINES": spineSwitchs,
 			"LEAFS": leafSwitchs,
 			"NET": net,
-			"INTERFACES": topologyInterfaces
+			"INTERFACES": topologyInterfaces,
+			"SWITCH_ICON": icon, 
+			"CONFIGS": configs
 		}
 		
   
@@ -318,7 +334,7 @@ class ProcessImpl():
 		os.remove(file)
     
     
-	def createSimpleTopology(self, topology, spinePrefix, leafPrefix, spinesCount, leafsCount, version, cpu, ram, ethernetCount, net):
+	def createSimpleTopology(self, topology, spinePrefix, leafPrefix, spinesCount, leafsCount, version, cpu, ram, ethernetCount, net, icon):
     
 		spineSwitchs = {}
 		leafSwitchs = {}
@@ -415,7 +431,8 @@ class ProcessImpl():
 			"SPINES": spineSwitchs,
 			"LEAFS": leafSwitchs,
 			"INTERFACES": topologyInterfaces,
-			"NET": net
+			"NET": net,
+			"SWITCH_ICON": icon
 		}
 		
 		# print(data)
