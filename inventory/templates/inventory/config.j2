@@ -1,0 +1,12 @@
+---
+inventory:
+    plugin: SimpleInventory
+    options:
+        host_file: '{{ HOSTS_YML }}'
+        group_file: '{{ GROUPS_YML }}'
+        defaults_file: '{{ DEFAULTS_YML }}'
+
+runner:
+    plugin: threaded
+    options:
+        num_workers: 20

@@ -23,13 +23,14 @@ from nornir_netmiko.connections import Netmiko
 ###### pyinstaller 에서 netmiko 플러그인없이 빌드되는 경우가 있는듯
 ConnectionPluginRegister.register("netmiko", Netmiko)
 
+
 class ProcessAuto():
 	def __init__(self):
   
 		if eq(platform.system().lower(), "windows"):
 			self.path = "./"
 		else:
-			self.path = os.path.sep.join(sys.argv[0].split(os.path.sep)[:-1])
+			self.path = os.path.sep.join(sys.argv[0].split(os.path.sep)[:-1]) + "/"
 
 		self.db = self.path + "db/db.xlsx"
 		self.inventory = self.path + "inventory.xlsx"
@@ -52,9 +53,23 @@ class ProcessAuto():
 		file_location = self.inventory
 
 	
+		with open(self.path + 'inventory/templates/inventory/config.j2') as f:
+			template = Template(f.read())
+		f.close()
+
+		data = {
+			"HOSTS_YML": self.path + "inventory/hosts.yml",
+			"GROUPS_YML": self.path + "inventory/groups.yml",
+			"DEFAULTS_YML": self.path + "inventory/defaults.yml",
+		}
+
+		with BlankNone(), open(self.path + "config.yml", "w") as inv:
+			inv.write(template.render(**data))
+		inv.close()
+
 		with open(self.resource_path("excelEnvriment.json"), "r") as f:
 			excelVar = json.load(f)
-			f.close()
+		f.close()
 
 		workbook = load_workbook(filename=file_location, read_only=False, data_only=True)
 		fabric_name = getExcelSheetValue(workbook, excelVar["all"]["fabricName"])
@@ -68,11 +83,12 @@ class ProcessAuto():
 
 		avd["inventory"] = generateInventory(file_location, excelVar)
 
-		with BlankNone(), open("./inventory/inventory.yml", "w") as inv:
+		with BlankNone(), open(self.path + "inventory/inventory.yml", "w") as inv:
 			inv.write(yaml.dump(avd["inventory"], sort_keys=False))
+		inv.close()
   
 	def norInit(self):
-		self.nr = InitNornir(config_file=self.resource_path("./config.yml"))
+		self.nr = InitNornir(config_file=self.path + "config.yml")
 		return self.nr
   
 
@@ -130,7 +146,9 @@ class ProcessAuto():
 
 	def selectedConfigCall(self, item):
 		self.nr.data.reset_failed_hosts()
-		self.nr.run(task=self.sendConfig, dir=f"config_backup/{item}")
+		cfg = f"config_backup/{item}"
+		print("selected config call = ", cfg)
+		self.nr.run(task=self.sendConfig, dir=cfg)
 		return self.nr
 
 			
@@ -138,9 +156,11 @@ class ProcessAuto():
 		"""
 		config 배포
 		"""
+		cfg = self.path + f"inventory/{dir}/{task.host.name}.cfg"
+		print(cfg)
 		result = Result(
 			host=task.host,
-			result=task.run(netmiko_send_config, config_file=f"./inventory/{dir}/{task.host.name}.cfg")
+			result=task.run(netmiko_send_config, config_file=cfg)
 		)
 		return result
  
@@ -172,7 +192,7 @@ class ProcessAuto():
 		taskHost = task.host
 		taskResult = task.run(netmiko_send_command, command_string="show running-config")
 
-		with open(f"./inventory/config_backup/{now}/{taskHost}.cfg", "w") as inv:
+		with open(self.path + f"inventory/config_backup/{now}/{taskHost}.cfg", "w") as inv:
 			inv.write(taskResult[0].result)
 			inv.close()
 				
@@ -187,7 +207,11 @@ class ProcessAuto():
 		folderName = now.strftime("%y%m%d%H%M%S")
 		nowDate = now.strftime('%y-%m-%d %H:%M:%S')
   
-		directory = f"./inventory/config_backup/{folderName}"
+		directory = self.path + f"inventory/config_backup"
+		if not os.path.exists(directory):
+			os.makedirs(directory)
+
+		directory = self.path + f"inventory/config_backup/{folderName}"
 		if not os.path.exists(directory):
 			os.makedirs(directory)
   
@@ -206,9 +230,9 @@ class ProcessAuto():
 		spineSwitchs = {}
 		leafSwitchs = {}
 
-		with open("./inventory/hosts.yml") as f:
+		with open(self.path + "inventory/hosts.yml") as f:
 			hosts = yaml.load(f, Loader=yaml.FullLoader)
-			f.close()
+		f.close()
 
 		for host in hosts:
 			hostType = hosts[host]["data"]["TYPE"]
@@ -261,8 +285,8 @@ class ProcessAuto():
 			###### config 포함시 base64로 인코딩 처리
 			if configInclude:
 				# print("config 포함")
-				with open(f"./inventory/config/{host}.cfg") as r:
-					config = base64.b64encode(r.read().encode('ascii')).strip().decode('utf-8')
+				with open(self.path + f"inventory/config/{host}.cfg") as r:
+					config = base64.b64encode(r.read().encode('utf-8')).strip().decode('utf-8')
 					configState = 1
 					r.close()
      
@@ -289,7 +313,7 @@ class ProcessAuto():
 				configs.setdefault(leafIdx, config)
   
 		# print(configs)
-		with open("./inventory/topologyInterfaces.yml") as f:
+		with open(self.path + "inventory/topologyInterfaces.yml") as f:
 			topologyInterfaces = yaml.load(f, Loader=yaml.FullLoader)
 			f.close()
 
@@ -310,20 +334,22 @@ class ProcessAuto():
 		
   
   
-		directory = f"./topology"
+		directory = self.path + "topology"
 		if not os.path.exists(directory):
 			os.makedirs(directory)
   
-		file = f'./{topologyName}.unl'
+		file = f"{topologyName}.unl"
   
-		with open('./inventory/templates/topology/topology.j2') as f:
+		with open(self.path + 'inventory/templates/topology/topology.j2') as f:
 			template = Template(f.read())
+		f.close()
+
 		with BlankNone(), open(f'{file}', "w", encoding='utf8') as reqs:   
-				reqs.write(template.render(**data))
-				reqs.close() 
+			reqs.write(template.render(**data))
+		reqs.close() 
     
     
-		zipOutput = f'./{directory}/{topologyName}.zip'
+		zipOutput = f'{directory}/{topologyName}.zip'
 		
 		zipFile = zipfile.ZipFile(zipOutput, "w")
 		
@@ -437,19 +463,21 @@ class ProcessAuto():
 		
 		# print(data)
   
-		directory = f"./topology"
+		directory = self.path + f"topology"
 		if not os.path.exists(directory):
 			os.makedirs(directory)
   
-		file = f'./{topologyName}.unl'
+		file = f'{topologyName}.unl'
   
-		with open('./inventory/templates/topology/topology.j2') as f:
+		with open(self.path + 'inventory/templates/topology/topology.j2') as f:
 			template = Template(f.read())
+		f.close()
+
 		with BlankNone(), open(f'{file}', "w", encoding='utf8') as reqs:   
 				reqs.write(template.render(**data))
-				reqs.close() 
+		reqs.close() 
     
-		zipOutput = f'./{directory}/{topologyName}.zip'
+		zipOutput = f'{directory}/{topologyName}.zip'
 		
 		zipFile = zipfile.ZipFile(zipOutput, "w")
 		
@@ -485,7 +513,7 @@ class ProcessAuto():
 			for k in self.nr.inventory.hosts[host].keys():
 				data.setdefault(k, self.nr.inventory.hosts[host][k])
 
-			with open("./inventory/config/" + host + ".cfg", "w", encoding='utf8') as reqs:   
+			with open(self.path + "inventory/config/" + host + ".cfg", "w", encoding='utf8') as reqs:   
 				reqs.write(template.render(**data))
 				reqs.close() 
 		return self.nr
@@ -638,7 +666,7 @@ class ProcessAuto():
 
 		if cfgBackUp:
 			if not os.path.exists(logCfg):
-				shutil.copytree("./inventory/config/", f'{logCfg}')
+				shutil.copytree(self.path + "inventory/config/", f'{logCfg}')
 
 
 		

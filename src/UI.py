@@ -34,11 +34,24 @@ class UI():
 		# if platform.system()=='Windows':
 		# 	asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 		self.root = tk.Tk()
-		self.root.title("i-Cloud CO.,LTD")
+		self.root.title("i-Cloud")
 		self.root.iconbitmap(self.resource_path("icloud.ico"))
-		self.root.geometry("640x800+600+100") ## w, h, x, y
+		self.root.geometry("750x800+600+100") ## w, h, x, y
 		self.root.resizable(False, False)
   
+		if eq(platform.system().lower(), "windows"):
+			self.path = "./"
+			self.defaultButtonW = 18
+			self.defaultTextBoxW = 40
+			self.defaultComboBoxW = 38
+			self.defaultbackupTextBoxW = 50
+		else:
+			self.path = os.path.sep.join(sys.argv[0].split(os.path.sep)[:-1]) + "/"
+			self.defaultButtonW = 20
+			self.defaultTextBoxW = 26
+			self.defaultComboBoxW = 24
+			self.defaultbackupTextBoxW = 36
+
 		self.db = "./db/db.xlsx"
 		self.inventory = "./inventory.xlsx"
 		self.cpuSize = [1,2]
@@ -89,7 +102,7 @@ class UI():
 		self.statusFrame = ttk.Frame(self.root)
 		self.statusFrame.pack(side="top")
 
-		self.buttonStatus = tk.Button(self.statusFrame, text="상태체크", width=18, command=lambda: self.loop.create_task(self.statusCheckCall()))
+		self.buttonStatus = tk.Button(self.statusFrame, text="상태체크", width=self.defaultButtonW, command=lambda: self.loop.create_task(self.statusCheckCall()))
 		self.buttonStatus.grid(row=0, column=1, sticky=tk.W, padx=(8, 8), pady=(8, 8))
   
 		##### 상태 체크 E #####
@@ -103,31 +116,31 @@ class UI():
 		self.ipv4Frame = ttk.Frame(self.root)
 		self.notebook.add(self.ipv4Frame, text=" IPV4 ")
 
-		self.buttonStatus = tk.Button(self.ipv4Frame, text="init Config 생성", width=18, command=lambda: self.loop.create_task(self.createConfig("init")))
+		self.buttonStatus = tk.Button(self.ipv4Frame, text="init Config 생성", width=self.defaultButtonW, command=lambda: self.loop.create_task(self.createConfig("init")))
 		self.buttonStatus.grid(row=0, column=1, sticky=tk.W, padx=(8, 8), pady=(8, 8))
   
-		self.buttonBackUp = tk.Button(self.ipv4Frame, text="base Config 생성", width=18, command=lambda: self.loop.create_task(self.createConfig("base")))
+		self.buttonBackUp = tk.Button(self.ipv4Frame, text="base Config 생성", width=self.defaultButtonW, command=lambda: self.loop.create_task(self.createConfig("base")))
 		self.buttonBackUp.grid(row=1, column=1, sticky=tk.W, padx=(8, 8), pady=(8, 8))
 
-		self.buttonList = tk.Button(self.ipv4Frame, text="loop0 Config 생성", width=18, command=lambda: self.loop.create_task(self.createConfig("loop0")))
+		self.buttonList = tk.Button(self.ipv4Frame, text="loop0 Config 생성", width=self.defaultButtonW, command=lambda: self.loop.create_task(self.createConfig("loop0")))
 		self.buttonList.grid(row=2, column=1, sticky=tk.W, padx=(8, 8), pady=(8, 8))
   
-		self.buttonList = tk.Button(self.ipv4Frame, text="etcport Config 생성", width=18, command=lambda: self.loop.create_task(self.createConfig("etcport")))
+		self.buttonList = tk.Button(self.ipv4Frame, text="etcport Config 생성", width=self.defaultButtonW, command=lambda: self.loop.create_task(self.createConfig("etcport")))
 		self.buttonList.grid(row=3, column=1, sticky=tk.W, padx=(8, 8), pady=(8, 8))
   
-		self.buttonList = tk.Button(self.ipv4Frame, text="vxlan Config 생성", width=18, command=lambda: self.loop.create_task(self.createConfig("vxlan")))
+		self.buttonList = tk.Button(self.ipv4Frame, text="vxlan Config 생성", width=self.defaultButtonW, command=lambda: self.loop.create_task(self.createConfig("vxlan")))
 		self.buttonList.grid(row=4, column=1, sticky=tk.W, padx=(8, 8), pady=(8, 8))
   
-		self.buttonStatus = tk.Button(self.ipv4Frame, text="p2p IPv4 생성", width=18, command=lambda: self.loop.create_task(self.createConfig("p2pip")))
+		self.buttonStatus = tk.Button(self.ipv4Frame, text="p2p IPv4 생성", width=self.defaultButtonW, command=lambda: self.loop.create_task(self.createConfig("p2pip")))
 		self.buttonStatus.grid(row=0, column=2, sticky=tk.W, padx=(8, 8), pady=(8, 8))
   
-		self.buttonBackUp = tk.Button(self.ipv4Frame, text="BGP IPv4 생성", width=18, command=lambda: self.loop.create_task(self.createConfig("bgpv4")))
+		self.buttonBackUp = tk.Button(self.ipv4Frame, text="BGP IPv4 생성", width=self.defaultButtonW, command=lambda: self.loop.create_task(self.createConfig("bgpv4")))
 		self.buttonBackUp.grid(row=1, column=2, sticky=tk.W, padx=(8, 8), pady=(8, 8))
 	
-		self.buttonStatus = tk.Button(self.ipv4Frame, text="full IPv4 Config 생성", width=18, command=lambda: self.loop.create_task(self.createConfig("fullv4")))
+		self.buttonStatus = tk.Button(self.ipv4Frame, text="full IPv4 Config 생성", width=self.defaultButtonW, command=lambda: self.loop.create_task(self.createConfig("fullv4")))
 		self.buttonStatus.grid(row=2, column=2, sticky=tk.W, padx=(8, 8), pady=(8, 8))
 
-		self.buttonSelectedDeploy = tk.Button(self.ipv4Frame, text="Config 배포", width=18, command=lambda: self.loop.create_task(self.sendConfigCall()))
+		self.buttonSelectedDeploy = tk.Button(self.ipv4Frame, text="Config 배포", width=self.defaultButtonW, command=lambda: self.loop.create_task(self.sendConfigCall()))
 		self.buttonSelectedDeploy.grid(row=0, column=3, sticky=tk.W, padx=(8, 8), pady=(8, 8))
   
   
@@ -135,33 +148,33 @@ class UI():
 		self.ipv6Frame = ttk.Frame(self.root)
 		self.notebook.add(self.ipv6Frame, text=" IPV6 ")
 
-		self.buttonStatusIpv6 = tk.Button(self.ipv6Frame, text="init Config 생성", width=18, command=lambda: self.loop.create_task(self.createConfig("init")))
+		self.buttonStatusIpv6 = tk.Button(self.ipv6Frame, text="init Config 생성", width=self.defaultButtonW, command=lambda: self.loop.create_task(self.createConfig("init")))
 		self.buttonStatusIpv6.grid(row=0, column=1, sticky=tk.W, padx=(8, 8), pady=(8, 8))
   
-		self.buttonBackUpIpv6 = tk.Button(self.ipv6Frame, text="base Config 생성", width=18, command=lambda: self.loop.create_task(self.createConfig("base")))
+		self.buttonBackUpIpv6 = tk.Button(self.ipv6Frame, text="base Config 생성", width=self.defaultButtonW, command=lambda: self.loop.create_task(self.createConfig("base")))
 		self.buttonBackUpIpv6.grid(row=1, column=1, sticky=tk.W, padx=(8, 8), pady=(8, 8))
 
-		self.buttonListIpv6 = tk.Button(self.ipv6Frame, text="loop0 Config 생성", width=18, command=lambda: self.loop.create_task(self.createConfig("loop0")))
+		self.buttonListIpv6 = tk.Button(self.ipv6Frame, text="loop0 Config 생성", width=self.defaultButtonW, command=lambda: self.loop.create_task(self.createConfig("loop0")))
 		self.buttonListIpv6.grid(row=2, column=1, sticky=tk.W, padx=(8, 8), pady=(8, 8))
   
-		self.buttonListIpv6 = tk.Button(self.ipv6Frame, text="etcport Config 생성", width=18, command=lambda: self.loop.create_task(self.createConfig("etcport")))
+		self.buttonListIpv6 = tk.Button(self.ipv6Frame, text="etcport Config 생성", width=self.defaultButtonW, command=lambda: self.loop.create_task(self.createConfig("etcport")))
 		self.buttonListIpv6.grid(row=3, column=1, sticky=tk.W, padx=(8, 8), pady=(8, 8))
   
-		self.buttonListIpv6 = tk.Button(self.ipv6Frame, text="vxlan Config 생성", width=18, command=lambda: self.loop.create_task(self.createConfig("vxlan")))
+		self.buttonListIpv6 = tk.Button(self.ipv6Frame, text="vxlan Config 생성", width=self.defaultButtonW, command=lambda: self.loop.create_task(self.createConfig("vxlan")))
 		self.buttonListIpv6.grid(row=4, column=1, sticky=tk.W, padx=(8, 8), pady=(8, 8))
 
 
-		self.buttonStatusIpv6 = tk.Button(self.ipv6Frame, text="p2p IPv6 생성", width=18, command=lambda: self.loop.create_task(self.createConfig("p2pipv6")))
+		self.buttonStatusIpv6 = tk.Button(self.ipv6Frame, text="p2p IPv6 생성", width=self.defaultButtonW, command=lambda: self.loop.create_task(self.createConfig("p2pipv6")))
 		self.buttonStatusIpv6.grid(row=0, column=2, sticky=tk.W, padx=(8, 8), pady=(8, 8))
   
-		self.buttonBackUpIpv6 = tk.Button(self.ipv6Frame, text="BGP IPv6 생성", width=18, command=lambda: self.loop.create_task(self.createConfig("bgpv6")))
+		self.buttonBackUpIpv6 = tk.Button(self.ipv6Frame, text="BGP IPv6 생성", width=self.defaultButtonW, command=lambda: self.loop.create_task(self.createConfig("bgpv6")))
 		self.buttonBackUpIpv6.grid(row=1, column=2, sticky=tk.W, padx=(8, 8), pady=(8, 8))
   
-		self.buttonStatusIpv6 = tk.Button(self.ipv6Frame, text="full IPv6 Config 생성", width=18, command=lambda: self.loop.create_task(self.createConfig("fullv6")))
+		self.buttonStatusIpv6 = tk.Button(self.ipv6Frame, text="full IPv6 Config 생성", width=self.defaultButtonW, command=lambda: self.loop.create_task(self.createConfig("fullv6")))
 		self.buttonStatusIpv6.grid(row=2, column=2, sticky=tk.W, padx=(8, 8), pady=(8, 8))
 
 
-		self.buttonSelectedDeployIpv6 = tk.Button(self.ipv6Frame, text="Config 배포", width=18, command=lambda: self.loop.create_task(self.sendConfigCall()))
+		self.buttonSelectedDeployIpv6 = tk.Button(self.ipv6Frame, text="Config 배포", width=self.defaultButtonW, command=lambda: self.loop.create_task(self.sendConfigCall()))
 		self.buttonSelectedDeployIpv6.grid(row=0, column=3, sticky=tk.W, padx=(8, 8), pady=(8, 8))
 
 
@@ -173,27 +186,27 @@ class UI():
 		self.topologyLabel = ttk.Label(self.topologyFrame, text="이름(영문) : ")
 		self.topologyLabel.grid(row=0, column=1, padx=(8, 8), pady=(8, 8))
 		self.topology = StringVar()
-		self.topologyTextBox = ttk.Entry(self.topologyFrame, width=40, textvariable=self.topology)
+		self.topologyTextBox = ttk.Entry(self.topologyFrame, width=self.defaultTextBoxW, textvariable=self.topology)
 		self.topologyTextBox.grid(row=0, column=2, padx=(8, 8), pady=(8, 8))
   
 		self.versionLabel = ttk.Label(self.topologyFrame, text="버전 : ")
 		self.versionLabel.grid(row=1, column=1, padx=(8, 8), pady=(8, 8))
 		self.version = StringVar()
 		self.version.set("veos-4.27.4.1M-noztp")
-		self.versionTextBox = ttk.Entry(self.topologyFrame, width=40, textvariable=self.version)
+		self.versionTextBox = ttk.Entry(self.topologyFrame, width=self.defaultTextBoxW, textvariable=self.version)
 		self.versionTextBox.grid(row=1, column=2, padx=(8, 8), pady=(8, 8))
 
 		self.ethernetLabel = ttk.Label(self.topologyFrame, text="Ethernet 개수 : ")
 		self.ethernetLabel.grid(row=2, column=1, padx=(8, 8), pady=(8, 8))
 		# self.ethernet = StringVar()
-		self.ethernetComboBox = ttk.Combobox(self.topologyFrame, width=38, values=self.ethernetSize, state="readonly")
+		self.ethernetComboBox = ttk.Combobox(self.topologyFrame, width=self.defaultComboBoxW, values=self.ethernetSize, state="readonly")
 		self.ethernetComboBox.current(0)
 		self.ethernetComboBox.grid(row=2, column=2, padx=(8, 8), pady=(8, 8))
   
 		self.cpuLabel = ttk.Label(self.topologyFrame, text="CPU 개수 : ")
 		self.cpuLabel.grid(row=3, column=1)
 		# self.cpu = StringVar()
-		self.cpuComboBox = ttk.Combobox(self.topologyFrame, width=38, values=self.cpuSize, state="readonly")
+		self.cpuComboBox = ttk.Combobox(self.topologyFrame, width=self.defaultComboBoxW, values=self.cpuSize, state="readonly")
 		self.cpuComboBox.current(1)
 		self.cpuComboBox.grid(row=3, column=2, padx=(8, 8), pady=(8, 8))
   
@@ -201,31 +214,31 @@ class UI():
 		self.ramLabel = ttk.Label(self.topologyFrame, text="RAM 크기 : ")
 		self.ramLabel.grid(row=4, column=1, padx=(8, 8), pady=(8, 8))
 		# self.ram = StringVar()
-		self.ramComboBox = ttk.Combobox(self.topologyFrame, width=38, values=self.ramSize, state="readonly")
+		self.ramComboBox = ttk.Combobox(self.topologyFrame, width=self.defaultComboBoxW, values=self.ramSize, state="readonly")
 		self.ramComboBox.current(3)
 		self.ramComboBox.grid(row=4, column=2, padx=(8, 8), pady=(8, 8))
   
 		self.cloudLabel = ttk.Label(self.topologyFrame, text="Cloud1 네트워크 생성 : ")
 		self.cloudLabel.grid(row=5, column=1, padx=(8, 8), pady=(8, 8))
 		self.cloud = IntVar()
-		self.cloudCheckBox = ttk.Checkbutton(self.topologyFrame, width=38, variable=self.cloud)
+		self.cloudCheckBox = ttk.Checkbutton(self.topologyFrame, width=self.defaultComboBoxW, variable=self.cloud)
 		self.cloudCheckBox.grid(row=5, column=2, padx=(8, 8), pady=(8, 8))
   
 		self.configIncludeLabel = ttk.Label(self.topologyFrame, text="Config 포함 : ")
 		self.configIncludeLabel.grid(row=6, column=1, padx=(8, 8), pady=(8, 8))
 		self.configInclude = IntVar()
 		self.configInclude.set(1)
-		self.configIncludeCheckBox = ttk.Checkbutton(self.topologyFrame, width=38, variable=self.configInclude)
+		self.configIncludeCheckBox = ttk.Checkbutton(self.topologyFrame, width=self.defaultComboBoxW, variable=self.configInclude)
 		self.configIncludeCheckBox.grid(row=6, column=2, padx=(8, 8), pady=(8, 8))
   
   
 		self.switchIconLabel = ttk.Label(self.topologyFrame, text="Switch Icon : ")
 		self.switchIconLabel.grid(row=7, column=1)
-		self.switchIconComboBox = ttk.Combobox(self.topologyFrame, width=38, values=self.switchIcon, state="readonly")
+		self.switchIconComboBox = ttk.Combobox(self.topologyFrame, width=self.defaultComboBoxW, values=self.switchIcon, state="readonly")
 		self.switchIconComboBox.current(0)
 		self.switchIconComboBox.grid(row=7, column=2, padx=(8, 8), pady=(8, 8))
   
-		self.topologyButton = tk.Button(self.topologyFrame, text="Lab Topology 생성", width=18, command=lambda: self.loop.create_task(self.createTopology()))
+		self.topologyButton = tk.Button(self.topologyFrame, text="Lab Topology 생성", width=self.defaultButtonW, command=lambda: self.loop.create_task(self.createTopology()))
 		self.topologyButton.grid(row=0, column=3, sticky=tk.W, padx=(8, 8), pady=(8, 8))
   
   
@@ -236,23 +249,23 @@ class UI():
 		self.backupLabel = ttk.Label(self.initFrame, text="백업메모 : ")
 		self.backupLabel.grid(row=1, column=1)
 		self.backup = StringVar()
-		self.backupTextBox = ttk.Entry(self.initFrame, width=50, textvariable=self.backup)
+		self.backupTextBox = ttk.Entry(self.initFrame, width=self.defaultbackupTextBoxW, textvariable=self.backup)
 		self.backupTextBox.grid(row=1, column=2)
   
-		self.buttonBackUp = tk.Button(self.initFrame, text="Config 백업", width=18, command=lambda: self.loop.create_task(self.backupConfigCall()))
+		self.buttonBackUp = tk.Button(self.initFrame, text="Config 백업", width=self.defaultButtonW, command=lambda: self.loop.create_task(self.backupConfigCall()))
 		self.buttonBackUp.grid(row=1, column=3, sticky=tk.W, padx=(8, 8), pady=(8, 8))
 
-		self.buttonList = tk.Button(self.initFrame, text="Config 백업 List", width=18, command=lambda: self.loop.create_task(self.getBackupConfigList()))
+		self.buttonList = tk.Button(self.initFrame, text="Config 백업 List", width=self.defaultButtonW, command=lambda: self.loop.create_task(self.getBackupConfigList()))
 		self.buttonList.grid(row=2, column=3, sticky=tk.W, padx=(8, 8), pady=(8, 8))
 
-		self.buttonSelectedDeploy = tk.Button(self.initFrame, text="Config 백업 선택 배포", width=18, command=lambda: self.loop.create_task(self.selectedConfigCall()))
+		self.buttonSelectedDeploy = tk.Button(self.initFrame, text="Config 백업 선택 배포", width=self.defaultButtonW, command=lambda: self.loop.create_task(self.selectedConfigCall()))
 		self.buttonSelectedDeploy.grid(row=3, column=3, sticky=tk.W, padx=(8, 8), pady=(8, 8))
   
-		self.buttonSelectedDeploy = tk.Button(self.initFrame, text="-------------------", width=18)
+		self.buttonSelectedDeploy = tk.Button(self.initFrame, text="-------------------", width=self.defaultButtonW)
 		self.buttonSelectedDeploy.grid(row=4, column=3, sticky=tk.W, padx=(8, 8), pady=(8, 8))
   
 		
-		self.buttonSelectedDeploy = tk.Button(self.initFrame, text="※※※ 초기화 ※※※", width=18, command=lambda: self.loop.create_task(self.cleanConfigCall()))
+		self.buttonSelectedDeploy = tk.Button(self.initFrame, text="※※※ 초기화 ※※※", width=self.defaultButtonW, command=lambda: self.loop.create_task(self.cleanConfigCall()))
 		self.buttonSelectedDeploy.grid(row=5, column=3, sticky=tk.W, padx=(8, 8), pady=(8, 8))
   
   
@@ -260,7 +273,7 @@ class UI():
 		self.pingTestFrame = ttk.Frame(self.root)
 		self.notebook.add(self.pingTestFrame, text=" P2P PING TEST ")
 		
-		self.pingTestButton = tk.Button(self.pingTestFrame, text="P2P PING TEST", width=18, command=lambda: self.loop.create_task(self.pingTest()))
+		self.pingTestButton = tk.Button(self.pingTestFrame, text="P2P PING TEST", width=self.defaultButtonW, command=lambda: self.loop.create_task(self.pingTest()))
 		self.pingTestButton.grid(row=0, column=3, sticky=tk.W, padx=(8, 8), pady=(8, 8))
   
 		##### 간편 topology 생성
@@ -271,27 +284,27 @@ class UI():
 		self.simpleTopologyLabel = ttk.Label(self.simpleTopologyFrame, text="이름(영문) : ")
 		self.simpleTopologyLabel.grid(row=0, column=1, padx=(8, 8), pady=(8, 8))
 		self.simpleTopology = StringVar()
-		self.simpleTopologyTextBox = ttk.Entry(self.simpleTopologyFrame, width=40, textvariable=self.simpleTopology)
+		self.simpleTopologyTextBox = ttk.Entry(self.simpleTopologyFrame, width=self.defaultTextBoxW, textvariable=self.simpleTopology)
 		self.simpleTopologyTextBox.grid(row=0, column=2, padx=(8, 8), pady=(8, 8))
   
 		self.simpleVersionLabel = ttk.Label(self.simpleTopologyFrame, text="버전 : ")
 		self.simpleVersionLabel.grid(row=1, column=1, padx=(8, 8), pady=(8, 8))
 		self.simpleVersion = StringVar()
 		self.simpleVersion.set("veos-4.27.4.1M-noztp")
-		self.simpleVersionTextBox = ttk.Entry(self.simpleTopologyFrame, width=40, textvariable=self.simpleVersion)
+		self.simpleVersionTextBox = ttk.Entry(self.simpleTopologyFrame, width=self.defaultTextBoxW, textvariable=self.simpleVersion)
 		self.simpleVersionTextBox.grid(row=1, column=2, padx=(8, 8), pady=(8, 8))
 
 		self.simpleSpinePrefixLabel = ttk.Label(self.simpleTopologyFrame, text="Spine Prefix : ")
 		self.simpleSpinePrefixLabel.grid(row=2, column=1, padx=(8, 8), pady=(8, 8))
 		self.simpleSpinePrefix = StringVar()
 		self.simpleSpinePrefix.set("Spine-")
-		self.simpleSpinePrefixTextBox = ttk.Entry(self.simpleTopologyFrame, width=40, textvariable=self.simpleSpinePrefix)
+		self.simpleSpinePrefixTextBox = ttk.Entry(self.simpleTopologyFrame, width=self.defaultTextBoxW, textvariable=self.simpleSpinePrefix)
 		self.simpleSpinePrefixTextBox.grid(row=2, column=2, padx=(8, 8), pady=(8, 8))
   
 		self.simpleSpineLabel = ttk.Label(self.simpleTopologyFrame, text="Spine 개수 : ")
 		self.simpleSpineLabel.grid(row=3, column=1, padx=(8, 8), pady=(8, 8))
 		# self.simpleSpine = StringVar()
-		self.simpleSpineComboBox = ttk.Combobox(self.simpleTopologyFrame, width=38, values=self.spineSize, state="readonly")
+		self.simpleSpineComboBox = ttk.Combobox(self.simpleTopologyFrame, width=self.defaultComboBoxW, values=self.spineSize, state="readonly")
 		self.simpleSpineComboBox.current(0)
 		self.simpleSpineComboBox.grid(row=3, column=2, padx=(8, 8), pady=(8, 8))
   
@@ -299,50 +312,50 @@ class UI():
 		self.simpleLeafPrefixLabel.grid(row=4, column=1, padx=(8, 8), pady=(8, 8))
 		self.simpleLeafPrefix = StringVar()
 		self.simpleLeafPrefix.set("Leaf-")
-		self.simpleLeafPrefixTextBox = ttk.Entry(self.simpleTopologyFrame, width=40, textvariable=self.simpleLeafPrefix)
+		self.simpleLeafPrefixTextBox = ttk.Entry(self.simpleTopologyFrame, width=self.defaultTextBoxW, textvariable=self.simpleLeafPrefix)
 		self.simpleLeafPrefixTextBox.grid(row=4, column=2, padx=(8, 8), pady=(8, 8))
   
 		self.simpleLeafLabel = ttk.Label(self.simpleTopologyFrame, text="Leaf 개수 : ")
 		self.simpleLeafLabel.grid(row=5, column=1, padx=(8, 8), pady=(8, 8))
 		# self.simpleLeaf = StringVar()
-		self.simpleLeafComboBox = ttk.Combobox(self.simpleTopologyFrame, width=38, values=self.leafSize, state="readonly")
+		self.simpleLeafComboBox = ttk.Combobox(self.simpleTopologyFrame, width=self.defaultComboBoxW, values=self.leafSize, state="readonly")
 		self.simpleLeafComboBox.current(6)
 		self.simpleLeafComboBox.grid(row=5, column=2, padx=(8, 8), pady=(8, 8))
   
 		self.simpleEthernetLabel = ttk.Label(self.simpleTopologyFrame, text="Ethernet 개수 : ")
 		self.simpleEthernetLabel.grid(row=6, column=1)
-		self.simpleEthernetComboBox = ttk.Combobox(self.simpleTopologyFrame, width=38, values=self.ethernetSize, state="readonly")
+		self.simpleEthernetComboBox = ttk.Combobox(self.simpleTopologyFrame, width=self.defaultComboBoxW, values=self.ethernetSize, state="readonly")
 		self.simpleEthernetComboBox.current(0)
 		self.simpleEthernetComboBox.grid(row=6, column=2, padx=(8, 8), pady=(8, 8))
   
 		self.simpleCpuLabel = ttk.Label(self.simpleTopologyFrame, text="CPU 개수 : ")
 		self.simpleCpuLabel.grid(row=7, column=1)
-		self.simpleCpuComboBox = ttk.Combobox(self.simpleTopologyFrame, width=38, values=self.cpuSize, state="readonly")
+		self.simpleCpuComboBox = ttk.Combobox(self.simpleTopologyFrame, width=self.defaultComboBoxW, values=self.cpuSize, state="readonly")
 		self.simpleCpuComboBox.current(1)
 		self.simpleCpuComboBox.grid(row=7, column=2, padx=(8, 8), pady=(8, 8))
   
 		
 		self.simpleRamLabel = ttk.Label(self.simpleTopologyFrame, text="RAM 크기 : ")
 		self.simpleRamLabel.grid(row=8, column=1)
-		self.simpleRamComboBox = ttk.Combobox(self.simpleTopologyFrame, width=38, values=self.ramSize, state="readonly")
+		self.simpleRamComboBox = ttk.Combobox(self.simpleTopologyFrame, width=self.defaultComboBoxW, values=self.ramSize, state="readonly")
 		self.simpleRamComboBox.current(3)
 		self.simpleRamComboBox.grid(row=8, column=2, padx=(8, 8), pady=(8, 8))
   
 		self.simpleCloudLabel = ttk.Label(self.simpleTopologyFrame, text="Cloud1 네트워크 생성 : ")
 		self.simpleCloudLabel.grid(row=9, column=1, padx=(8, 8), pady=(8, 8))
 		self.simpleCloud = IntVar()
-		self.simpleCloudCheckBox = ttk.Checkbutton(self.simpleTopologyFrame, width=38, variable=self.simpleCloud)
+		self.simpleCloudCheckBox = ttk.Checkbutton(self.simpleTopologyFrame, width=self.defaultComboBoxW, variable=self.simpleCloud)
 		self.simpleCloudCheckBox.grid(row=9, column=2, padx=(8, 8), pady=(8, 8))
   
 		self.simpleSwitchIconLabel = ttk.Label(self.simpleTopologyFrame, text="Switch Icon : ")
 		self.simpleSwitchIconLabel.grid(row=10, column=1)
-		self.simpleSwitchIconComboBox = ttk.Combobox(self.simpleTopologyFrame, width=38, values=self.switchIcon, state="readonly")
+		self.simpleSwitchIconComboBox = ttk.Combobox(self.simpleTopologyFrame, width=self.defaultComboBoxW, values=self.switchIcon, state="readonly")
 		self.simpleSwitchIconComboBox.current(0)
 		self.simpleSwitchIconComboBox.grid(row=10, column=2, padx=(8, 8), pady=(8, 8))
 
 
   
-		self.simpleTopologyButton = tk.Button(self.simpleTopologyFrame, text="Lab Topology 생성", width=18, command=lambda: self.loop.create_task(self.createSimpleTopology()))
+		self.simpleTopologyButton = tk.Button(self.simpleTopologyFrame, text="Lab Topology 생성", width=self.defaultButtonW, command=lambda: self.loop.create_task(self.createSimpleTopology()))
 		self.simpleTopologyButton.grid(row=0, column=3, sticky=tk.W, padx=(8, 8), pady=(8, 8))
   
   
@@ -352,26 +365,26 @@ class UI():
 		
 		self.labOsVendorLabel = ttk.Label(self.labOsFrame, text="제조사 : ")
 		self.labOsVendorLabel.grid(row=0, column=1)
-		self.labOsVender = ttk.Combobox(self.labOsFrame, width=38, values=self.vendors, state="readonly")
+		self.labOsVender = ttk.Combobox(self.labOsFrame, width=self.defaultComboBoxW, values=self.vendors, state="readonly")
 		self.labOsVender.current(0)
 		self.labOsVender.grid(row=0, column=2, padx=(8, 8), pady=(8, 8))
   
 		self.labServerIpLabel = ttk.Label(self.labOsFrame, text="Lab Server IP : ")
 		self.labServerIpLabel.grid(row=1, column=1, padx=(8, 8), pady=(8, 8))
 		self.labServerIp = StringVar()
-		self.labServerIpTextBox = ttk.Entry(self.labOsFrame, width=40, textvariable=self.labServerIp)
+		self.labServerIpTextBox = ttk.Entry(self.labOsFrame, width=self.defaultTextBoxW, textvariable=self.labServerIp)
 		self.labServerIpTextBox.grid(row=1, column=2, padx=(8, 8), pady=(8, 8))
   
 		self.labServerIdLabel = ttk.Label(self.labOsFrame, text="Lab Server ID: ")
 		self.labServerIdLabel.grid(row=2, column=1, padx=(8, 8), pady=(8, 8))
 		self.labServerId = StringVar()
-		self.labServerIdTextBox = ttk.Entry(self.labOsFrame, width=40, textvariable=self.labServerId)
+		self.labServerIdTextBox = ttk.Entry(self.labOsFrame, width=self.defaultTextBoxW, textvariable=self.labServerId)
 		self.labServerIdTextBox.grid(row=2, column=2, padx=(8, 8), pady=(8, 8))
   
 		self.labServerPwLabel = ttk.Label(self.labOsFrame, text="Lab Server PW: ")
 		self.labServerPwLabel.grid(row=3, column=1, padx=(8, 8), pady=(8, 8))
 		self.labServerPw = StringVar()
-		self.labServerPwTextBox = ttk.Entry(self.labOsFrame, width=40, textvariable=self.labServerPw)
+		self.labServerPwTextBox = ttk.Entry(self.labOsFrame, width=self.defaultTextBoxW, textvariable=self.labServerPw)
 		self.labServerPwTextBox.grid(row=3, column=2, padx=(8, 8), pady=(8, 8))
 		self.labServerPwTextBox.config(show="*")
   
@@ -379,13 +392,13 @@ class UI():
 		self.labServerPortLabel.grid(row=4, column=1, padx=(8, 8), pady=(8, 8))
 		self.labServerPort = StringVar()
 		self.labServerPort.set(22)
-		self.labServerPortTextBox = ttk.Entry(self.labOsFrame, width=40, textvariable=self.labServerPort)
+		self.labServerPortTextBox = ttk.Entry(self.labOsFrame, width=self.defaultTextBoxW, textvariable=self.labServerPort)
 		self.labServerPortTextBox.grid(row=4, column=2, padx=(8, 8), pady=(8, 8))
   
-		self.labOsListButton = tk.Button(self.labOsFrame, text="OS 목록", width=18, command=lambda: self.loop.create_task(self.getLabOsList()))
+		self.labOsListButton = tk.Button(self.labOsFrame, text="OS 목록", width=self.defaultButtonW, command=lambda: self.loop.create_task(self.getLabOsList()))
 		self.labOsListButton.grid(row=0, column=3, sticky=tk.W, padx=(8, 8), pady=(8, 8))
   
-		self.labOsListButton = tk.Button(self.labOsFrame, text="Lab OS 추가", width=18, command=lambda: self.loop.create_task(self.appendLabOS()))
+		self.labOsListButton = tk.Button(self.labOsFrame, text="Lab OS 추가", width=self.defaultButtonW, command=lambda: self.loop.create_task(self.appendLabOS()))
 		self.labOsListButton.grid(row=1, column=3, sticky=tk.W, padx=(8, 8), pady=(8, 8))
   
 		self.root.protocol("WM_DELETE_WINDOW", self.windowButtonClose)
@@ -473,7 +486,7 @@ class UI():
 			messagebox.showwarning(title="warning", message="선택된 영역이 없습니다.")
 			return FALSE
  
-		directory = f"./inventory/config_backup/{item}"
+		directory = self.path + f"inventory/config_backup/{item}"
 		# print(f"config_backup/{item}")
 		if not os.path.exists(directory):
 			messagebox.showwarning(title="warning", message="백업내역이 없습니다. 확인후 다시 시도하세요.")
