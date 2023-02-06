@@ -35,22 +35,24 @@ class UI():
 		# 	asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 		self.root = tk.Tk()
 		self.root.title("i-Cloud")
-		self.root.iconbitmap(self.resource_path("icloud.ico"))
+
 		self.root.geometry("750x800+600+100") ## w, h, x, y
 		self.root.resizable(False, False)
-  
+
 		if eq(platform.system().lower(), "windows"):
 			self.path = "./"
 			self.defaultButtonW = 18
 			self.defaultTextBoxW = 40
 			self.defaultComboBoxW = 38
 			self.defaultbackupTextBoxW = 50
+			self.root.iconbitmap(self.resource_path("icloud.ico"))
 		else:
 			self.path = os.path.sep.join(sys.argv[0].split(os.path.sep)[:-1]) + "/"
 			self.defaultButtonW = 20
 			self.defaultTextBoxW = 26
 			self.defaultComboBoxW = 24
 			self.defaultbackupTextBoxW = 36
+			self.root.tk.call('wm', 'iconphoto', self.root._w, tk.PhotoImage(file=self.resource_path('icloud.png')))
 
 		self.db = "./db/db.xlsx"
 		self.inventory = "./inventory.xlsx"
