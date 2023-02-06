@@ -1,6 +1,6 @@
 from multiprocessing.sharedctypes import Value
 import re, ipaddress
-import yaml, json, sys, platform
+import yaml, json, sys
 from generators.BlankNone import *
 from openpyxl import load_workbook
 from operator import eq
@@ -14,15 +14,6 @@ def resource_path(relative_path):
 	except Exception:
 		base_path = os.path.abspath(".")
 	return os.path.join(base_path, relative_path)
-
-def defaultDirRoot():
-	if eq(platform.system().lower(), "windows"):
-		path = "./"
-	else:
-		path = os.path.sep.join(sys.argv[0].split(os.path.sep)[:-1]) + "/"
-
-	return path
-
 
 def convertToBoolIfNeeded(variable):
 	if type(variable) == str and re.match(r'(?i)(True|False)', variable.strip()):
@@ -247,7 +238,7 @@ def generateInventory(inventory_file, excelVar):
     
 	# print(topologyInterfaces)
 	##### eve-ng, pnetlab 포톨로지파일 생성용 데이터 생성 S ######
-	with BlankNone(), open(defaultDirRoot() + "inventory/topologyInterfaces.yml", "w") as inv:
+	with BlankNone(), open("./inventory/topologyInterfaces.yml", "w") as inv:
 		inv.write(yaml.dump(topologyInterfaces, sort_keys=False))
 		inv.close()
   ##### eve-ng, pnetlab 포톨로지파일 생성용 데이터 생성 E ######
@@ -327,7 +318,7 @@ def generateInventory(inventory_file, excelVar):
 
 	config = data
 
-	with BlankNone(), open(defaultDirRoot() + "inventory/hosts.yml", "w") as inv:
+	with BlankNone(), open("./inventory/hosts.yml", "w") as inv:
 		inv.write(yaml.dump(config, sort_keys=False))
 		inv.close()
   
@@ -349,10 +340,10 @@ def generateInventory(inventory_file, excelVar):
 		"BACKUP_FILENAME": "{{ inventory_hostname }}_{{ lookup('pipe', 'date +%Y%m%d%H%M%S') }}"
 	}
 
-	with open(defaultDirRoot() + 'inventory/templates/inventory/defaults.j2') as f:
+	with open('./inventory/templates/inventory/defaults.j2') as f:
 		template = Template(f.read())
 
-	with open(defaultDirRoot() + "inventory/defaults.yml", "w") as reqs:
+	with open("./inventory/defaults.yml", "w") as reqs:
 			reqs.write(template.render(**data))
 
 	return inventory
