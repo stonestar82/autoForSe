@@ -294,7 +294,7 @@ class UI():
 		self.simpleVersionTextBox = ttk.Entry(self.simpleTopologyFrame, width=self.defaultTextBoxW, textvariable=self.simpleVersion)
 		self.simpleVersionTextBox.grid(row=1, column=2, padx=(8, 8), pady=(8, 8))
 
-		self.simpleSpinePrefixLabel = ttk.Label(self.simpleTopologyFrame, text="Spine Prefix : ")
+		self.simpleSpinePrefixLabel = ttk.Label(self.simpleTopologyFrame, text="Spine Name : ")
 		self.simpleSpinePrefixLabel.grid(row=2, column=1, padx=(8, 8), pady=(8, 8))
 		self.simpleSpinePrefix = StringVar()
 		self.simpleSpinePrefix.set("Spine-")
@@ -308,7 +308,7 @@ class UI():
 		self.simpleSpineComboBox.current(0)
 		self.simpleSpineComboBox.grid(row=3, column=2, padx=(8, 8), pady=(8, 8))
   
-		self.simpleLeafPrefixLabel = ttk.Label(self.simpleTopologyFrame, text="Leaf Prefix : ")
+		self.simpleLeafPrefixLabel = ttk.Label(self.simpleTopologyFrame, text="Leaf Name : ")
 		self.simpleLeafPrefixLabel.grid(row=4, column=1, padx=(8, 8), pady=(8, 8))
 		self.simpleLeafPrefix = StringVar()
 		self.simpleLeafPrefix.set("Leaf-")
@@ -662,12 +662,12 @@ class UI():
 			return False
  
 		if eq("", spinePrefix):
-			messagebox.showwarning(title="warning", message="spine prefix을 입력해 주세요.")
+			messagebox.showwarning(title="warning", message="spine Name을 입력해 주세요.")
 			self.simpleSpinePrefixTextBox.focus()
 			return False
 
 		if eq("", leafPrefix):
-			messagebox.showwarning(title="warning", message="leaf prefix을 입력해 주세요.")
+			messagebox.showwarning(title="warning", message="leaf Name을 입력해 주세요.")
 			self.simpleLeafPrefixTextBox.focus()
 			return False
  

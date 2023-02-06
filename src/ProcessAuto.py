@@ -258,6 +258,8 @@ class ProcessAuto():
 		spineIdx = 0
 		leafIdx = spinesCount
   
+		ethernetCount = int(ethernetCount) + 1
+  
 		## spine icon 시작 위치값
 		# s_start = int(width / spinesCount - space / spinesCount)
 		# if eq(1, spinesCount):
@@ -288,11 +290,12 @@ class ProcessAuto():
 				with open(self.path + f"inventory/config/{host}.cfg") as r:
 					config = base64.b64encode(r.read().encode('utf-8')).strip().decode('utf-8')
 					configState = 1
-					r.close()
-     
+				r.close()
+
 			else:
 				configState = 0
-				
+				config = ""
+    
 			if (hostType.upper() == "SPINE"):
 				spineIdx = spineIdx + 1
 				spineSwitchs[host]= {
@@ -374,6 +377,9 @@ class ProcessAuto():
   
 		spineIdx = 0
 		leafIdx = 0
+  
+		## lab은 mgmt 포함으로 이더넷 수를 계산하여 +1 를 추가한다.
+		ethernetCount = ethernetCount + 1
 
 		###### ethernetCount 체크
 		if (ethernetCount < leafsCount):
