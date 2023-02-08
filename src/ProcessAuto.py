@@ -247,7 +247,7 @@ class ProcessAuto():
 		spineIdx = 0
 		leafIdx = spinesCount
   
-		ethernetCount = int(ethernetCount) + 1
+		# ethernetCount = int(ethernetCount) + 1
   
 		## spine icon 시작 위치값
 		# s_start = int(width / spinesCount - space / spinesCount)
@@ -368,7 +368,7 @@ class ProcessAuto():
 		leafIdx = 0
   
 		## lab은 mgmt 포함으로 이더넷 수를 계산하여 +1 를 추가한다.
-		ethernetCount = ethernetCount + 1
+		# ethernetCount = ethernetCount + 1
 
 		###### ethernetCount 체크
 		if (ethernetCount < leafsCount):
