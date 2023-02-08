@@ -187,64 +187,66 @@ class UI():
 		self.topologyFrame = ttk.Frame(self.root)
 		self.notebook.add(self.topologyFrame, text=" LAB-TOPOLOGY ")
   
+		self.configIncludeLabel = ttk.Label(self.topologyFrame, text="Config 포함시 일반이미지(ZTP모드)로 생성해 주세요. ZTP Disable 모드시 PNET에서 비정상 작동합니다.")
+		self.configIncludeLabel.grid(row=0, column=1, columnspan=3, padx=(8, 8), pady=(8, 8))
   
 		self.topologyLabel = ttk.Label(self.topologyFrame, text="이름(영문) : ")
-		self.topologyLabel.grid(row=0, column=1, padx=(8, 8), pady=(8, 8))
+		self.topologyLabel.grid(row=1, column=1, padx=(8, 8), pady=(8, 8))
 		self.topology = StringVar()
 		self.topologyTextBox = ttk.Entry(self.topologyFrame, width=self.defaultTextBoxW, textvariable=self.topology)
-		self.topologyTextBox.grid(row=0, column=2, padx=(8, 8), pady=(8, 8))
+		self.topologyTextBox.grid(row=1, column=2, padx=(8, 8), pady=(8, 8))
   
 		self.versionLabel = ttk.Label(self.topologyFrame, text="버전 : ")
-		self.versionLabel.grid(row=1, column=1, padx=(8, 8), pady=(8, 8))
+		self.versionLabel.grid(row=2, column=1, padx=(8, 8), pady=(8, 8))
 		self.version = StringVar()
 		self.version.set("veos-4.27.4.1M-noztp")
 		self.versionTextBox = ttk.Entry(self.topologyFrame, width=self.defaultTextBoxW, textvariable=self.version)
-		self.versionTextBox.grid(row=1, column=2, padx=(8, 8), pady=(8, 8))
+		self.versionTextBox.grid(row=2, column=2, padx=(8, 8), pady=(8, 8))
 
 		self.ethernetLabel = ttk.Label(self.topologyFrame, text="Ethernet 개수 : ")
-		self.ethernetLabel.grid(row=2, column=1, padx=(8, 8), pady=(8, 8))
+		self.ethernetLabel.grid(row=3, column=1, padx=(8, 8), pady=(8, 8))
 		# self.ethernet = StringVar()
 		self.ethernetComboBox = ttk.Combobox(self.topologyFrame, width=self.defaultComboBoxW, values=self.ethernetSize, state="readonly")
 		self.ethernetComboBox.current(0)
-		self.ethernetComboBox.grid(row=2, column=2, padx=(8, 8), pady=(8, 8))
+		self.ethernetComboBox.grid(row=3, column=2, padx=(8, 8), pady=(8, 8))
   
 		self.cpuLabel = ttk.Label(self.topologyFrame, text="CPU 개수 : ")
-		self.cpuLabel.grid(row=3, column=1)
+		self.cpuLabel.grid(row=4, column=1)
 		# self.cpu = StringVar()
 		self.cpuComboBox = ttk.Combobox(self.topologyFrame, width=self.defaultComboBoxW, values=self.cpuSize, state="readonly")
 		self.cpuComboBox.current(1)
-		self.cpuComboBox.grid(row=3, column=2, padx=(8, 8), pady=(8, 8))
+		self.cpuComboBox.grid(row=4, column=2, padx=(8, 8), pady=(8, 8))
   
 		
 		self.ramLabel = ttk.Label(self.topologyFrame, text="RAM 크기 : ")
-		self.ramLabel.grid(row=4, column=1, padx=(8, 8), pady=(8, 8))
+		self.ramLabel.grid(row=5, column=1, padx=(8, 8), pady=(8, 8))
 		# self.ram = StringVar()
 		self.ramComboBox = ttk.Combobox(self.topologyFrame, width=self.defaultComboBoxW, values=self.ramSize, state="readonly")
 		self.ramComboBox.current(3)
-		self.ramComboBox.grid(row=4, column=2, padx=(8, 8), pady=(8, 8))
+		self.ramComboBox.grid(row=5, column=2, padx=(8, 8), pady=(8, 8))
   
 		self.cloudLabel = ttk.Label(self.topologyFrame, text="Cloud1 네트워크 생성 : ")
-		self.cloudLabel.grid(row=5, column=1, padx=(8, 8), pady=(8, 8))
+		self.cloudLabel.grid(row=6, column=1, padx=(8, 8), pady=(8, 8))
 		self.cloud = IntVar()
 		self.cloudCheckBox = ttk.Checkbutton(self.topologyFrame, width=self.defaultComboBoxW, variable=self.cloud)
-		self.cloudCheckBox.grid(row=5, column=2, padx=(8, 8), pady=(8, 8))
+		self.cloudCheckBox.grid(row=6, column=2, padx=(8, 8), pady=(8, 8))
   
 		self.configIncludeLabel = ttk.Label(self.topologyFrame, text="Config 포함 : ")
-		self.configIncludeLabel.grid(row=6, column=1, padx=(8, 8), pady=(8, 8))
+		self.configIncludeLabel.grid(row=7, column=1, padx=(8, 8), pady=(8, 8))
 		self.configInclude = IntVar()
 		self.configInclude.set(1)
 		self.configIncludeCheckBox = ttk.Checkbutton(self.topologyFrame, width=self.defaultComboBoxW, variable=self.configInclude)
-		self.configIncludeCheckBox.grid(row=6, column=2, padx=(8, 8), pady=(8, 8))
+		self.configIncludeCheckBox.grid(row=7, column=2, padx=(8, 8), pady=(8, 8))
   
   
 		self.switchIconLabel = ttk.Label(self.topologyFrame, text="Switch Icon : ")
-		self.switchIconLabel.grid(row=7, column=1)
+		self.switchIconLabel.grid(row=8, column=1)
 		self.switchIconComboBox = ttk.Combobox(self.topologyFrame, width=self.defaultComboBoxW, values=self.switchIcon, state="readonly")
 		self.switchIconComboBox.current(0)
-		self.switchIconComboBox.grid(row=7, column=2, padx=(8, 8), pady=(8, 8))
+		self.switchIconComboBox.grid(row=8, column=2, padx=(8, 8), pady=(8, 8))
   
 		self.topologyButton = tk.Button(self.topologyFrame, text="Lab Topology 생성", width=self.defaultButtonW, command=lambda: self.loop.create_task(self.createTopology()))
-		self.topologyButton.grid(row=0, column=3, sticky=tk.W, padx=(8, 8), pady=(8, 8))
+		self.topologyButton.grid(row=1, column=3, sticky=tk.W, padx=(8, 8), pady=(8, 8))
   
   
 		##### 백업
