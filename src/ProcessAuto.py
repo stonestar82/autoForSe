@@ -38,8 +38,8 @@ class ProcessAuto():
 		self.fullSession = {"fullv4":["init", "base", "loop0", "p2pip", "bgpv4", "etcport", "vxlan"] , "fullv6": ["init", "base", "loop0", "p2pipv6", "bgpv6", "etcport", "vxlan"]}
 		self.sessions = list(set(self.fullSession["fullv4"] + self.fullSession["fullv6"]))
   
-		self.ymlInit()
-		self.norInit()
+		# self.ymlInit()
+		# self.norInit()
   
 	def resource_path(self, relative_path):
 		try:
@@ -71,21 +71,9 @@ class ProcessAuto():
 			excelVar = json.load(f)
 		f.close()
 
-		workbook = load_workbook(filename=file_location, read_only=False, data_only=True)
-		fabric_name = getExcelSheetValue(workbook, excelVar["all"]["fabricName"])
+		generateInventory(file_location, excelVar)
 
-		avd = {
-			"inventory": None,
-			"group_vars": {
-				fabric_name: None
-			}
-		}
-
-		avd["inventory"] = generateInventory(file_location, excelVar)
-
-		with BlankNone(), open(self.path + "inventory/inventory.yml", "w") as inv:
-			inv.write(yaml.dump(avd["inventory"], sort_keys=False))
-		inv.close()
+  
   
 	def norInit(self):
 		self.nr = InitNornir(config_file=self.path + "config.yml")
@@ -157,7 +145,7 @@ class ProcessAuto():
 		config 배포
 		"""
 		cfg = self.path + f"inventory/{dir}/{task.host.name}.cfg"
-		print(cfg)
+		# print(cfg)
 		result = Result(
 			host=task.host,
 			result=task.run(netmiko_send_config, config_file=cfg)
@@ -222,6 +210,7 @@ class ProcessAuto():
 		sheet = workbook["db"]
 		sheet.append([memo, folderName, nowDate])
 		workbook.save(self.db)
+		workbook.close()
   
 		return self.nr
 
@@ -447,8 +436,10 @@ class ProcessAuto():
 					id, {
 						"START": spine,
 						"SPORT": "Et" + str(spinePort),
+						"S_ID": int(spinePort),
 						"END": leaf,
 						"EPORT": "Et" + str(leafPort),
+						"E_ID": int(leafPort),
 					}
 				)
   
@@ -511,7 +502,8 @@ class ProcessAuto():
 				for row in sheet.iter_rows():
 					j2 = j2 + row[0].value + "\n"
 				
-
+		workbook._archive.close()
+  
 		template = Template(j2)
       
 		for host in self.nr.inventory.hosts:

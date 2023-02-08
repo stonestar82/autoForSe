@@ -2,97 +2,125 @@
   START: D1-Spine-01
   SPORT: Eth1
   S_IP: 100.101.1.1/30
+  S_ID: 1
   END: D1-Leaf-01
   EPORT: Eth1
   E_IP: 100.101.1.2/30
+  E_ID: 1
 2:
   START: D1-Spine-01
   SPORT: Eth2
   S_IP: 100.101.2.1/30
+  S_ID: 2
   END: D1-Leaf-02
   EPORT: Eth1
   E_IP: 100.101.2.2/30
+  E_ID: 1
 3:
   START: D1-Spine-01
   SPORT: Eth3
   S_IP: 100.101.3.1/30
+  S_ID: 3
   END: D1-Leaf-03
   EPORT: Eth1
   E_IP: 100.101.3.2/30
+  E_ID: 1
 4:
   START: D1-Spine-01
   SPORT: Eth4
   S_IP: 100.101.4.1/30
+  S_ID: 4
   END: D1-Leaf-04
   EPORT: Eth1
   E_IP: 100.101.4.2/30
+  E_ID: 1
 5:
   START: D1-Spine-01
   SPORT: Eth5
   S_IP: 100.101.201.1/30
+  S_ID: 5
   END: D1-BL-01
   EPORT: Eth1
   E_IP: 100.101.201.2/30
+  E_ID: 1
 6:
   START: D1-Spine-01
   SPORT: Eth6
   S_IP: 100.101.202.1/30
+  S_ID: 6
   END: D1-BL-02
   EPORT: Eth1
   E_IP: 100.101.202.2/30
+  E_ID: 1
 7:
   START: D1-Spine-02
   SPORT: Eth1
   S_IP: 100.102.1.1/30
+  S_ID: 1
   END: D1-Leaf-01
   EPORT: Eth2
   E_IP: 100.102.1.2/30
+  E_ID: 2
 8:
   START: D1-Spine-02
   SPORT: Eth2
   S_IP: 100.102.2.1/30
+  S_ID: 2
   END: D1-Leaf-02
   EPORT: Eth2
   E_IP: 100.102.2.2/30
+  E_ID: 2
 9:
   START: D1-Spine-02
   SPORT: Eth3
   S_IP: 100.102.3.1/30
+  S_ID: 3
   END: D1-Leaf-03
   EPORT: Eth2
   E_IP: 100.102.3.2/30
+  E_ID: 2
 10:
   START: D1-Spine-02
   SPORT: Eth4
   S_IP: 100.102.4.1/30
+  S_ID: 4
   END: D1-Leaf-04
   EPORT: Eth2
   E_IP: 100.102.4.2/30
+  E_ID: 2
 11:
   START: D1-Spine-02
   SPORT: Eth5
   S_IP: 100.102.201.1/30
+  S_ID: 5
   END: D1-BL-01
   EPORT: Eth2
   E_IP: 100.102.201.2/30
+  E_ID: 2
 12:
   START: D1-Spine-02
   SPORT: Eth6
   S_IP: 100.102.202.1/30
+  S_ID: 6
   END: D1-BL-02
   EPORT: Eth2
   E_IP: 100.102.202.2/30
+  E_ID: 2
 13:
   START: D1-BL-01
   SPORT: Eth7
   S_IP: 192.168.0.1/30
+  S_ID: 7
   END: D1-BL-02
   EPORT: Eth7
   E_IP: 192.168.0.2/30
+  E_ID: 7
 14:
   START: D1-BL-01
   SPORT: Eth8
   S_IP: 192.168.0.1/30
+  S_ID: 8
   END: D1-BL-02
   EPORT: Eth8
   E_IP: 192.168.0.2/30
+  E_ID: 8

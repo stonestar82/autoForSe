@@ -24,149 +24,31 @@ def defaultDirRoot():
 	return path
 
 
-def convertToBoolIfNeeded(variable):
-	if type(variable) == str and re.match(r'(?i)(True|False)', variable.strip()):
-		variable = True if re.match(r'(?i)true', variable.strip()) else False
-	return variable
-
-def getFabricName(inventory_file, excelVar):
-  workbook = load_workbook(filename=inventory_file, read_only=False, data_only=True)
-  return getExcelSheetValue(workbook, excelVar["all"]["fabricName"])
-
-def parseSpineInfo(inventory_file, excelVar):
-	'''
-	엑셀에서 데이터를 읽어 spine 정보 처리
-	'''
-	spines_info = {"vars": {"type": "spine"}, "hosts": {}}
-	workbook = load_workbook(filename=inventory_file, read_only=True, data_only=True)
-	inventory_worksheet = workbook[excelVar["spine"]["sheet"]]
-
-	spinePrefix = excelVar["spine"]["prefix"]
-	spineHostnameCol = excelVar["spine"]["props"]["hostname"]["col"]
-
-	for row in inventory_worksheet.iter_rows():
-		for cell in row:
-			# print(cell.value)
-			if cell.value:
-				if eq(cell.coordinate, spineHostnameCol + str(cell.row)):
-					p = re.compile(spinePrefix)
-					if (p.match(str(cell.value))):
-						codi = excelVar["spine"]["props"]["mgmt"]["col"] + str(cell.row)
-						mgmtIp = inventory_worksheet[codi].value
-						spines_info["hosts"][cell.value] = {"ansible_host": mgmtIp}
-	
-	return spines_info
-
-def parseLeafInfo(inventory_file, excelVar, leaf_type="L3"):
-	'''
-	엑셀에서 데이터를 읽어 leaf 정보 처리
-	'''
-	
-	workbook = load_workbook(filename=inventory_file, read_only=True, data_only=True)
-	leafTypeName = "l3leaf" if leaf_type == "L3" else "l2leaf"
-	inventory_worksheet = workbook[excelVar["leaf"]["sheet"]]
-	leafs = {"vars": {"type": leafTypeName}, "hosts": {}}
-	
-	# transform the workbook to a list of dictionaries
-	leafPrefix = excelVar["leaf"]["prefix"]
-	leafHostnameCol = excelVar["leaf"]["props"]["hostname"]["col"]
-	
-	for row in inventory_worksheet.iter_rows():
-		for cell in row:
-			# print(cell)
-			if cell.value:
-				if eq(cell.coordinate, leafHostnameCol + str(cell.row)):
-					p = re.compile(leafPrefix)
-					if (p.match(str(cell.value))):
-						codi = excelVar["leaf"]["props"]["mgmt"]["col"] + str(cell.row)
-						mgmtIp = inventory_worksheet[codi].value
-      
-						leafs["hosts"][cell.value] = {"ansible_host": mgmtIp}
-
-
-	return leafs
-
-def getFabricInventory(inventory_file, fabric_name, excelVar):
-	"""
-	엑셀에서 데이터를 읽어 inventory.yml 생성용 데이터 처리
-	"""
-	fabric_inventory = {"children":{}}
-	workbook = load_workbook(filename=inventory_file, read_only=False, data_only=True)
-
-	fabric_inventory["children"][fabric_name+"_SPINES"] = parseSpineInfo(inventory_file, excelVar)
-	
-	if parseLeafInfo(inventory_file, excelVar, leaf_type="L3") != None:
-		fabric_inventory["children"][fabric_name+"_L3LEAFS"] = parseLeafInfo(inventory_file, excelVar, leaf_type="L3")
-		
-	fabric_inventory["vars"] = {
-		"ansible_connection": "network_cli",
-		"ansible_network_os": "eos",
-		"ansible_become": True,
-		"ansible_become_method": "enable",
-		"ansible_httpapi_use_ssl": False,
-		"ansible_httpapi_validate_certs": False
-	}
-	return fabric_inventory
-
 def generateInventory(inventory_file, excelVar):
 	"""
 	엑셀에서 데이터를 읽어 inventory 정보 처리
 	d1.yml, all.yml 파일 생성
   toplogy 이미지 생성
 	"""
-	fabric_name = getFabricName(inventory_file, excelVar)
+	info = pd.read_excel(inventory_file, sheet_name="Var").fillna("")
 
-	if fabric_name is None:
-		return
-
-	inventory = {
-		"all": {
-			"children": {
-				"FABRIC": {
-					"children": {
-						fabric_name: {
-							"children": {       
-								"PODS": {
-									"children": { 
-										fabric_name + "_SPINES" : None,
-										fabric_name + "_L3LEAFS" : None
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-
-	workbook = load_workbook(filename=inventory_file, read_only=False, data_only=True)
- 
-	info = {}
-	for item in excelVar["all"]:
-		v = getExcelSheetValue(workbook, excelVar["all"][item])
-		info[excelVar["all"][item]["mapping"]] = v
-
-	mgmtVrf = info["mgmt_interface_vrf"]
-	mgmtInterface = info["mgmt_interface"]
-	mgmtGw = info["mgmt_gateway"]
-	macAging = info["mac_aging"]
-	arpAging = info["arp_aging"]
-	clockTimeZone = info["clock_timezone"]
-	adminName = info["admin_name"]
-	adminPassword = info["admin_info"]
-	admin_privilege = info["admin_privilege"]
-	spanningTreeMode = info["spanning_tree_mode"]
-	terminalLength = info["terminal_length"]
-	terminalWidth = info["terminal_width"]
-	logginBuffered = info["loggin_buffered"]
-	p2pSubnet = info["p2p_subnet"]
-	asnRule = info["asn_rule"]
-	spineBGPAsn = info["spine_bgp_asn"]
- 
-	# print("spineBGPAsn = ", spineBGPAsn)
-	#Add Fabric info
-	inventory["all"]["children"]["FABRIC"]["children"][fabric_name]["children"]["PODS"] = getFabricInventory(inventory_file, fabric_name, excelVar)
+	mgmtVrf = info.loc[[6], ["Variables Value"]].values[0][0]
+	mgmtInterface = "Management1"
+	mgmtGw = info.loc[[7],["Variables Value"]].values[0][0]
+	macAging = info.loc[[16],["Variables Value"]].values[0][0]
+	arpAging = info.loc[[17],["Variables Value"]].values[0][0]
+	clockTimeZone = info.loc[[9],["Variables Value"]].values[0][0]
+	adminName = info.loc[[11],["Variables Value"]].values[0][0]
+	adminPassword = info.loc[[12],["Variables Value"]].values[0][0]
+	admin_privilege = info.loc[[13],["Variables Value"]].values[0][0]
+	spanningTreeMode = info.loc[[5],["Variables Value"]].values[0][0]
+	terminalLength = info.loc[[1],["Variables Value"]].values[0][0]
+	terminalWidth = info.loc[[2],["Variables Value"]].values[0][0]
+	logginBuffered = info.loc[[3],["Variables Value"]].values[0][0]
+	p2pSubnet = info.loc[[14],["Prefix & Define Value"]].values[0][0]
+	spineBGPAsn = info.loc[[3],["Prefix & Define Value"]].values[0][0]
+	spinePrefix = info.loc[[9],["Prefix & Define Value"]].values[0][0]
+	leafPrefix = info.loc[[10],["Prefix & Define Value"]].values[0][0]
 
 	##### port map 정보 로드 S #####
 	sheetName = excelVar["pd"]["portMap"]["sheetName"]
@@ -178,9 +60,6 @@ def generateInventory(inventory_file, excelVar):
 	leafPortCol = excelVar["pd"]["portMap"]["leafPort"]
 	leafIpCol = excelVar["pd"]["portMap"]["leafIp"]
 
-	spinePrefix = excelVar["spine"]["prefix"]
-	leafPrefix = excelVar["leaf"]["prefix"]
-
 	switches = pd.read_excel(inventory_file, header=headerRow, sheet_name=sheetName)[[spineCol, spinePortCol, spineIpCol, leafCol, leafPortCol, leafIpCol]].dropna(axis=0)
 
 	portMap = {}
@@ -188,14 +67,19 @@ def generateInventory(inventory_file, excelVar):
 
 	for idx, switch in switches.iterrows():
 		id = idx + 1
+		###### 포트값에서 숫자 추출, 
+		sPortID = re.sub(r'[^0-9]', '', switch[spinePortCol])
+		ePortID = re.sub(r'[^0-9]', '', switch[leafPortCol])
 		topologyInterfaces.setdefault(id, 
 			{
 				"START": switch[spineCol],
 				"SPORT": switch[spinePortCol],
 				"S_IP": switch[spineIpCol], 
+				"S_ID": int(sPortID),
 				"END": switch[leafCol],
 				"EPORT": switch[leafPortCol],
-				"E_IP": switch[leafIpCol]
+				"E_IP": switch[leafIpCol],
+				"E_ID": int(ePortID)
 			}
 		)
   
@@ -249,7 +133,7 @@ def generateInventory(inventory_file, excelVar):
 	##### eve-ng, pnetlab 포톨로지파일 생성용 데이터 생성 S ######
 	with BlankNone(), open(defaultDirRoot() + "inventory/topologyInterfaces.yml", "w") as inv:
 		inv.write(yaml.dump(topologyInterfaces, sort_keys=False))
-		inv.close()
+	inv.close()
   ##### eve-ng, pnetlab 포톨로지파일 생성용 데이터 생성 E ######
   
 	##### port map 정보 로드 E #####
@@ -257,7 +141,7 @@ def generateInventory(inventory_file, excelVar):
 	## 기본변수 로드
 	with open(resource_path("./excelEnvriment.json"), "r", encoding='utf8') as f:
 		excelVar = json.load(f)
-		f.close()
+	f.close()
   
 	sheetName = excelVar["pd"]["switchIpInfo"]["sheetName"]
 	headerRow = excelVar["pd"]["switchIpInfo"]["header"]
@@ -272,7 +156,7 @@ def generateInventory(inventory_file, excelVar):
  
 	## Switch 정보 로드
 	switches = pd.read_excel(inventory_file, header=headerRow, sheet_name=sheetName)[[hostNameCol, mgmtCol, loopback0Col, bgpAsnCol, typeCol, idCol, loop1Col]].fillna("")
-
+	
 	config = {"hosts": None}
 
 	data = {}
@@ -329,7 +213,7 @@ def generateInventory(inventory_file, excelVar):
 
 	with BlankNone(), open(defaultDirRoot() + "inventory/hosts.yml", "w") as inv:
 		inv.write(yaml.dump(config, sort_keys=False))
-		inv.close()
+	inv.close()
   
   # Group Vars all.yml 파일 생성
 	data = {
@@ -351,8 +235,8 @@ def generateInventory(inventory_file, excelVar):
 
 	with open(defaultDirRoot() + 'inventory/templates/inventory/defaults.j2') as f:
 		template = Template(f.read())
-
+	f.close()
+ 
 	with open(defaultDirRoot() + "inventory/defaults.yml", "w") as reqs:
-			reqs.write(template.render(**data))
-
-	return inventory
+		reqs.write(template.render(**data))
+	reqs.close()

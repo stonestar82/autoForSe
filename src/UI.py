@@ -104,8 +104,11 @@ class UI():
 		self.statusFrame = ttk.Frame(self.root)
 		self.statusFrame.pack(side="top")
 
-		self.buttonStatus = tk.Button(self.statusFrame, text="상태체크", width=self.defaultButtonW, command=lambda: self.loop.create_task(self.statusCheckCall()))
+		self.buttonStatus = tk.Button(self.statusFrame, text="엑셀 로드", width=self.defaultButtonW, command=lambda: self.loop.create_task(self.programReset()))
 		self.buttonStatus.grid(row=0, column=1, sticky=tk.W, padx=(8, 8), pady=(8, 8))
+  
+		self.buttonStatus = tk.Button(self.statusFrame, text="상태체크", width=self.defaultButtonW, command=lambda: self.loop.create_task(self.statusCheckCall()))
+		self.buttonStatus.grid(row=0, column=2, sticky=tk.W, padx=(8, 8), pady=(8, 8))
   
 		##### 상태 체크 E #####
 
@@ -443,11 +446,18 @@ class UI():
 			self.root.destroy()
 			exit()
    
-	  
+	async def programReset(self):
+		self.nr.close_connections()
+		self.ymlInit()
+		self.nr = self.processAuto.norInit()
+  
+		self.gridReset()
+		self.treeview.insert('', END, text='', values=("엑셀 로드", "엑셀정보가 로드되었습니다.", datetime.now().strftime('%y-%m-%d %H:%M:%S')))
+
+   
 	async def cleanConfigCall(self):
   
-		answer = askyesno(title='confirmation',
-                    message='초기화를 진행하시겠습니까?. 스위치의 모든 정보가 초기화 됩니다')
+		answer = askyesno(title='confirmation', message='초기화를 진행하시겠습니까?. 스위치의 모든 정보가 초기화 됩니다')
 		if not answer:
 			pass
 		else:
@@ -593,12 +603,15 @@ class UI():
 			config = True
 		else:
 			config = False
-
-		# print("----------------------")
-		# print(cpu, version, ram, topology, ethernetCount)
   
 		if eq("", topology):
 			messagebox.showwarning(title="warning", message="토폴로지이름을 입력해 주세요.")
+			self.topologyTextBox.focus()
+			return False
+ 
+		if re.findall('[ㄱ-힣]', topology):
+			messagebox.showwarning(title="warning", message="토폴로지이름에 한글은 입력할 수 없습니다.")
+			self.topology.set("")
 			self.topologyTextBox.focus()
 			return False
  
@@ -609,26 +622,11 @@ class UI():
 
 		if config:
 			session = self.processAuto.getLastConfigGen()
-			print("session = ", session)
+			# print("session = ", session)
 			if not session in self.sessions:
 				messagebox.showwarning(title="warning", message="Config 생성후 생성해주세요")
 				return False
 
-		# if eq("", ethernetCount):
-		# 	messagebox.showwarning(title="warning", message="ethernet 갯수를 입력해 주세요.")
-		# 	self.ethernetComboBox.focus()
-		# 	return False
-    
-		# if eq("", cpu):
-		# 	messagebox.showwarning(title="warning", message="cpu 갯수를 입력해 주세요.")
-		# 	self.cpuComboBox.focus()
-		# 	return False
-    
-		# if eq("", ram):
-		# 	messagebox.showwarning(title="warning", message="ram 사이즈를 입력해 주세요.")
-		# 	self.ramComboBox.focus()
-		# 	return False
-   
 		self.gridReset()
   
 		self.processAuto.createTopology(topology=topology, cpu=cpu, ram=ram, version=version, ethernetCount=ethernetCount, net=net, icon=icon, configInclude=configInclude)
@@ -658,38 +656,61 @@ class UI():
 			self.simpleTopologyTextBox.focus()
 			return False
  
+		if re.findall('[ㄱ-힣]', topology):
+			messagebox.showwarning(title="warning", message="토폴로지이름에 한글은 입력할 수 없습니다.")
+			self.simpleTopology.set("")
+			self.simpleTopologyTextBox.focus()
+			return False
+
 		if eq("", version):
 			messagebox.showwarning(title="warning", message="버전을 입력해 주세요.")
 			self.simpleVersionTextBox.focus()
 			return False
  
 		if eq("", spinePrefix):
-			messagebox.showwarning(title="warning", message="spine Name을 입력해 주세요.")
+			messagebox.showwarning(title="warning", message="Spine Name을 입력해 주세요.")
 			self.simpleSpinePrefixTextBox.focus()
 			return False
 
+		if re.findall('[ㄱ-힣]', spinePrefix):
+			messagebox.showwarning(title="warning", message="Spine Name에 한글은 입력할 수 없습니다.")
+			self.simpleSpinePrefix.set("")
+			self.simpleSpinePrefixTextBox.focus()
+			return False
+ 
 		if eq("", leafPrefix):
-			messagebox.showwarning(title="warning", message="leaf Name을 입력해 주세요.")
+			messagebox.showwarning(title="warning", message="Leaf Name을 입력해 주세요.")
 			self.simpleLeafPrefixTextBox.focus()
 			return False
  
+		if re.findall('[ㄱ-힣]', leafPrefix):
+			messagebox.showwarning(title="warning", message="Leaf Name에 한글은 입력할 수 없습니다.")
+			self.simpleLeafPrefix.set("")
+			self.simpleLeafPrefixTextBox.focus()
+			return False
+ 
+		if eq(spinePrefix, leafPrefix):
+			messagebox.showwarning(title="warning", message="Spine/Leaf Name은 동일하게 사용할 수 없습니다.")
+			self.simpleSpinePrefixTextBox.focus()
+			return False
+ 
 		if eq("", ethernetCount):
-			messagebox.showwarning(title="warning", message="ethernet 갯수를 입력해 주세요.")
+			messagebox.showwarning(title="warning", message="Ethernet 갯수를 입력해 주세요.")
 			self.simpleEthernetComboBox.focus()
 			return False
     
     
 		if (ethernetCount < leafCount):
-			messagebox.showwarning(title="warning", message="ethernet 갯수가 leaf 갯수보다 작습니다.")
+			messagebox.showwarning(title="warning", message="Ethernet 갯수가 Leaf 갯수보다 작습니다.")
 			return False
 
 		if eq("", cpu):
-			messagebox.showwarning(title="warning", message="cpu 갯수를 입력해 주세요.")
+			messagebox.showwarning(title="warning", message="CPU 갯수를 입력해 주세요.")
 			self.simpleCpuComboBox.focus()
 			return False
     
 		if eq("", ram):
-			messagebox.showwarning(title="warning", message="ram 사이즈를 입력해 주세요.")
+			messagebox.showwarning(title="warning", message="RAM 사이즈를 입력해 주세요.")
 			self.simpleRamComboBox.focus()
 			return False
    
