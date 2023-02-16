@@ -1,3 +1,4 @@
+#-*- coding:utf-8 -*-
 import yaml, os, re
 from yaml.representer import Representer
 from yaml.dumper import Dumper

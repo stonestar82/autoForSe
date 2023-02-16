@@ -1,11 +1,15 @@
 import asyncio
-from src.UI3 import UI3
+from src.UI import UI
 from src.ProcessAuto import ProcessAuto
+from src.ProcessLab import ProcessLab
+from src.ProcessPM import ProcessPM
+from src.ProcessMinAnalyzer import ProcessMinAlanyzer
+from src. ProcessWeb import ProcessWeb
 import tkinter as tk
 from tkinter import ttk, messagebox
 from tkinter import *
 import yaml, json
-import asyncio, os
+import asyncio, os, sys
 from nornir import InitNornir
 from nornir_netmiko.tasks import netmiko_send_config, netmiko_send_command
 from nornir.core.task import Task, Result
@@ -15,8 +19,11 @@ from openpyxl import load_workbook
 from lib.BlankNone import *
 
 class App:
-	def exec(self):
-		self.window = UI3(asyncio, ProcessAutoImpl())
-		# await self.window.show();
+	def exec(self, expired):
+		self.window = UI(asyncio, ProcessAuto(expired), ProcessLab(), ProcessPM(), ProcessMinAlanyzer())
 
-App().exec()
+
+
+
+
+App().exec(sys.argv[1])

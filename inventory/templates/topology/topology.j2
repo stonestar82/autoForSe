@@ -32,6 +32,18 @@
       {%-endfor%}
       </node>
     {%-endfor%}
+    {%-for HOST in HOSTS%}
+      <node id="{{ HOSTS[HOST].ID }}" name="{{ HOST }}" type="qemu" template="veos" image="{{ EOS_VERSION }}" console="telnet" cpu="{{ CPU }}" cpulimit="{{ CPU }}" ram="{{ RAM }}" ethernet="{{ ETHERNET }}" uuid="" qemu_options="-machine type=pc,accel=kvm -serial mon:stdio -nographic -display none -no-user-config -rtc base=utc -boot order=d" qemu_version="2.4.0" qemu_arch="x86_64" qemu_nic="e1000" delay="0" icon="{{ SWITCH_ICON }}" config="{{ HOSTS[HOST].CONFIG }}" left="{{ HOSTS[HOST].LEFT }}" top="{{ HOSTS[HOST].TOP }}">
+      {%-if NET%}
+        <interface id="0" name="Mgmt1" type="ethernet" network_id="9999"/>
+      {%-endif%}
+      {%-for INTERFACE in INTERFACES%}
+        {%-if (INTERFACES[INTERFACE].END == HOST)%}
+        <interface id="{{ INTERFACES[INTERFACE].E_ID }}" name="{{ INTERFACES[INTERFACE].EPORT }}" type="ethernet" network_id="{{ INTERFACE }}"/>
+        {%-endif%}
+      {%-endfor%}
+      </node>
+    {%-endfor%}
     </nodes>
     <networks>
     {%-if NET%}

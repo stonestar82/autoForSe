@@ -1,3 +1,4 @@
+#-*- coding:utf-8 -*-
 import paramiko, time, ftplib, collections
 from paramiko.ssh_exception import AuthenticationException
 from operator import eq, ne
