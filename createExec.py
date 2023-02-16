@@ -5,19 +5,16 @@ from jinja2 import Template
 from datetime import datetime, timedelta
 import subprocess, py_compile
 
-now = datetime.now()		
-now = now.strftime("%Y%m%d")
-
 
 if eq(platform.system().lower(), "windows"):
   path = "."
   icon = "icloud.ico"
-  cmd = f'pyinstaller -F --icon=./{icon} --add-data="{icon};." --add-data="excelEnvriment.json;." --distpath="release/dist" -n=i-CloudAutomation release/execCompile.pyc {now}'
+  cmd = f'pyinstaller -F --icon=./{icon} --add-data="{icon};." --add-data="excelEnvriment.json;." --distpath="release/dist" -n=i-CloudAutomation exec.pyc'
 else:
   ## mac에서는 .ico는 인식안됨. -w 옵션이 들어가야 실행파일에 아이콘이 들어감
   path = os.path.sep.join(sys.argv[0].split(os.path.sep)[:-1])
   icon = "icloud.icns"
-  cmd = 'pyinstaller -F --icon={icon} --add-data="{icon}:." --add-data="icloud.png:." --add-data="excelEnvriment.json:." -n=i-CloudAutomation release/execCompile.pyc {now}'
+  cmd = 'pyinstaller -F --icon={icon} --add-data="{icon}:." --add-data="icloud.png:." --add-data="excelEnvriment.json:." -n=i-CloudAutomation exec.pyc'
   
 releaseFolder = f"{path}/release/"
 execFolder = f"{releaseFolder}/dist"
@@ -37,15 +34,7 @@ toCopyIco = f"{releaseFolder}/{icon}"
 envJson = f"{path}/excelEnvriment.json"
 toEnvJson = f"{releaseFolder}/excelEnvriment.json"
 exec = f"{path}/execCompile.py"
-toExec = f"{releaseFolder}/execCompile.py"
-
-
-
-
-execCreateJ2 = """import os
-os.system('{{cmd}}')
-"""
-
+toExec = f"{releaseFolder}/exec.py"
 
 ###### release폴더 삭제/생성 및 소스 복사, exec.py 생성
 if os.path.exists(f"{releaseFolder}/src"):
@@ -66,13 +55,6 @@ shutil.copytree(f"{path}/lib", f"{releaseFolder}/lib")
 # with open(f"{releaseFolder}/exec.py", "w", encoding="utf-8") as inv:
 #   inv.write(template.render(**data))
 # inv.close()
-
-template = Template(execCreateJ2)
-data = {"cmd": cmd}
-with open(f"{releaseFolder}/createExec.py", "w", encoding="utf-8") as inv:
-  inv.write(template.render(**data))
-inv.close()
-###### 난독처리
 
 
 ###### 기존 dist 폴더 삭제
@@ -106,33 +88,31 @@ src_list = os.listdir(f"{src_dir}/src")
 
 
 # 소스파일의 리스트에서 파일 하나씩 처리한다
-# for dst_file in src_list:
-#   # py 파일을 하나씩 pyc 로 bytecode로 컴파일한다.
-#   if (dst_file.endswith('.py')):
-#     # py--> pyc 로 확장자 변경
-#     compiled_py = dst_file.replace('.py', '.pyc')
-#     # py 파일을 pyc 로 컴파일하고 output을 target dir에 저장
-#     py_compile.compile(f"{src_dir}/src/{dst_file}", f"{src_dir}/src/{compiled_py}")          
-#     os.remove(f"{src_dir}/src/{dst_file}")
+for dst_file in src_list:
+  # py 파일을 하나씩 pyc 로 bytecode로 컴파일한다.
+  if (dst_file.endswith('.py')):
+    # py--> pyc 로 확장자 변경
+    compiled_py = dst_file.replace('.py', '.pyc')
+    # py 파일을 pyc 로 컴파일하고 output을 target dir에 저장
+    py_compile.compile(f"{src_dir}/src/{dst_file}", f"{src_dir}/src/{compiled_py}")          
+    os.remove(f"{src_dir}/src/{dst_file}")
 
 
 
 src_list = os.listdir(f"{src_dir}/lib")
-
-
 # 소스파일의 리스트에서 파일 하나씩 처리한다
-# for dst_file in src_list:
-#   # py 파일을 하나씩 pyc 로 bytecode로 컴파일한다.
-#   if (dst_file.endswith('.py')):
-#     # py--> pyc 로 확장자 변경
-#     compiled_py = dst_file.replace('.py', '.pyc')
-#     # py 파일을 pyc 로 컴파일하고 output을 target dir에 저장
-#     py_compile.compile(f"{src_dir}/lib/{dst_file}", f"{src_dir}/lib/{compiled_py}")          
-#     os.remove(f"{src_dir}/lib/{dst_file}")
+for dst_file in src_list:
+  # py 파일을 하나씩 pyc 로 bytecode로 컴파일한다.
+  if (dst_file.endswith('.py')):
+    # py--> pyc 로 확장자 변경
+    compiled_py = dst_file.replace('.py', '.pyc')
+    # py 파일을 pyc 로 컴파일하고 output을 target dir에 저장
+    py_compile.compile(f"{src_dir}/lib/{dst_file}", f"{src_dir}/lib/{compiled_py}")          
+    os.remove(f"{src_dir}/lib/{dst_file}")
 
 
-# py_compile.compile(f"{path}/execCompile.py", f"{releaseFolder}/execCompile.pyc")   
-# os.remove(f"{releaseFolder}/exec.py")
+py_compile.compile(f"{releaseFolder}/exec.py", f"{releaseFolder}/exec.pyc")   
+os.remove(f"{releaseFolder}/exec.py")
 
 
 
@@ -142,9 +122,7 @@ src_list = os.listdir(f"{src_dir}/lib")
 
 # os.remove(f"{src_dir}/createExec.py")
 
-now = datetime.now() + timedelta(days=60)
-now = now.strftime("%Y%m%d")
 
-print(f"날자 정보 = ", now)
+print(cmd)
 
 print("complete~!")

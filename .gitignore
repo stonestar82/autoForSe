@@ -12,3 +12,4 @@ log/
 pm/
 *.zip
 dist-sample/
+release/

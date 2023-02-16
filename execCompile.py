@@ -22,8 +22,4 @@ class App:
 	def exec(self, expired):
 		self.window = UI(asyncio, ProcessAuto(expired), ProcessLab(), ProcessPM(), ProcessMinAlanyzer())
 
-
-
-
-
-App().exec(sys.argv[1])
+App().exec(20230416)
