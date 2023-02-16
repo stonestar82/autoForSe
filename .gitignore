@@ -11,5 +11,4 @@ log/
 *.log
 pm/
 *.zip
-dist-sample/
 release/
