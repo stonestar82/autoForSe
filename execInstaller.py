@@ -16,7 +16,7 @@ else:
   ## mac에서는 .ico는 인식안됨. -w 옵션이 들어가야 실행파일에 아이콘이 들어감
   path = os.path.sep.join(sys.argv[0].split(os.path.sep)[:-1])
   icon = "icloud.icns"
-  cmd = 'pyinstaller -F --icon={icon} --add-data="{icon}:." --add-data="icloud.png:." --add-data="excelEnvriment.json:." --key={kkk} --distpath="release" -n=i-CloudAutomation execCompile.pyc'
+  cmd = f'pyinstaller -F --icon={icon} --add-data="{icon}:." --add-data="icloud.png:." --add-data="excelEnvriment.json:." --key={kkk} --distpath="release" -n=i-CloudAutomation execCompile.py'
   
 releaseFolder = f"{path}/release"
 execFolder = f"{releaseFolder}/dist"

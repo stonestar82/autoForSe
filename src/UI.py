@@ -46,7 +46,7 @@ class UI():
 		self.root = tk.Tk()
 		self.root.title("i-Cloud")
 
-		self.root.geometry("750x800+600+100") ## w, h, x, y
+		self.root.geometry("900x800+600+100") ## w, h, x, y
 		self.root.resizable(False, False)
 
 		if eq(platform.system().lower(), "windows"):
@@ -127,7 +127,7 @@ class UI():
 		##### tab 구현 S #####
 
 		##### 이중탭 구현 자동화/Lab & 정기점검
-		self.topNoteBook = ttk.Notebook(self.root, width=620, height=500, )
+		self.topNoteBook = ttk.Notebook(self.root, width=770, height=500, )
 		self.topNoteBook.pack()
   
 		self.automationFrame = ttk.Frame(self.root)
@@ -137,7 +137,7 @@ class UI():
 		self.topNoteBook.add(self.pmFrame, text=" 정기점검 ") 
   
 		##### 자동화 tab S ##### 
-		self.notebook = ttk.Notebook(self.automationFrame, width=620, height=500, )
+		self.notebook = ttk.Notebook(self.automationFrame, width=770, height=500, )
 		self.notebook.pack()
   
 	

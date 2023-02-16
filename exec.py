@@ -17,6 +17,9 @@ from jinja2 import Template
 from datetime import datetime
 from openpyxl import load_workbook
 from lib.BlankNone import *
+import matplotlib.pyplot as plt
+import pandas as pd
+import numpy as np
 
 class App:
 	def exec(self, expired):
