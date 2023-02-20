@@ -47,10 +47,10 @@ class UI():
 		self.root.title("i-Cloud")
 
 		
-		self.root.resizable(True, True)
+		
 
 		if eq(platform.system().lower(), "windows"):
-			self.root.geometry("750x800+600+100") ## w, h, x, y
+			self.root.geometry("650x800+600+100") ## w, h, x, y
 			self.path = "./"
 			self.defaultButtonW = 18
 			self.defaultTextBoxW = 40
@@ -59,6 +59,7 @@ class UI():
 			self.root.iconbitmap(self.resource_path("icloud.ico"))
 			self.longButtonW = 28
 			self.tabWidth = 620
+			self.root.resizable(False, False)
 		else:
 			self.root.geometry("900x800+600+0") ## w, h, x, y
 			self.path = os.path.sep.join(sys.argv[0].split(os.path.sep)[:-1]) + "/"
@@ -69,6 +70,7 @@ class UI():
 			self.root.tk.call('wm', 'iconphoto', self.root._w, tk.PhotoImage(file=self.resource_path('icloud.png')))
 			self.longButtonW = 26
 			self.tabWidth = 770
+			self.root.resizable(True, True)
    
 		self.db = "./db/db.xlsx"
 		self.inventory = "./inventory.xlsx"
