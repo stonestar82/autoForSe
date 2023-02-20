@@ -46,10 +46,11 @@ class UI():
 		self.root = tk.Tk()
 		self.root.title("i-Cloud")
 
-		self.root.geometry("900x800+600+100") ## w, h, x, y
+		
 		self.root.resizable(False, False)
 
 		if eq(platform.system().lower(), "windows"):
+			self.root.geometry("750x800+600+100") ## w, h, x, y
 			self.path = "./"
 			self.defaultButtonW = 18
 			self.defaultTextBoxW = 40
@@ -57,7 +58,9 @@ class UI():
 			self.defaultbackupTextBoxW = 50
 			self.root.iconbitmap(self.resource_path("icloud.ico"))
 			self.longButtonW = 28
+			self.tabWidth = 620
 		else:
+			self.root.geometry("900x800+600+100") ## w, h, x, y
 			self.path = os.path.sep.join(sys.argv[0].split(os.path.sep)[:-1]) + "/"
 			self.defaultButtonW = 20
 			self.defaultTextBoxW = 26
@@ -65,6 +68,7 @@ class UI():
 			self.defaultbackupTextBoxW = 36
 			self.root.tk.call('wm', 'iconphoto', self.root._w, tk.PhotoImage(file=self.resource_path('icloud.png')))
 			self.longButtonW = 26
+			self.tabWidth = 770
    
 		self.db = "./db/db.xlsx"
 		self.inventory = "./inventory.xlsx"
@@ -127,7 +131,7 @@ class UI():
 		##### tab 구현 S #####
 
 		##### 이중탭 구현 자동화/Lab & 정기점검
-		self.topNoteBook = ttk.Notebook(self.root, width=770, height=500, )
+		self.topNoteBook = ttk.Notebook(self.root, width=self.tabWidth, height=500, )
 		self.topNoteBook.pack()
   
 		self.automationFrame = ttk.Frame(self.root)

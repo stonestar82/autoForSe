@@ -330,6 +330,7 @@ class ProcessAuto():
 
 		cleanConfig = ["configure session", \
 									"rollback clean-config", \
+									"aaa authorization exec default local", \
 									f"{vrfInstance}", \
 									f"interface {mgmtInterface}", \
 									f"{vrfConfig}", \
