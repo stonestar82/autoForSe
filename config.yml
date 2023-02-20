@@ -2,9 +2,9 @@
 inventory:
     plugin: SimpleInventory
     options:
-        host_file: '/Users/pks/workspace/autoForSe/inventory/hosts.yml'
-        group_file: '/Users/pks/workspace/autoForSe/inventory/groups.yml'
-        defaults_file: '/Users/pks/workspace/autoForSe/inventory/defaults.yml'
+        host_file: './inventory/hosts.yml'
+        group_file: './inventory/groups.yml'
+        defaults_file: './inventory/defaults.yml'
 
 runner:
     plugin: threaded
