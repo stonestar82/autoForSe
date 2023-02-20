@@ -47,7 +47,7 @@ class UI():
 		self.root.title("i-Cloud")
 
 		
-		self.root.resizable(False, False)
+		self.root.resizable(True, True)
 
 		if eq(platform.system().lower(), "windows"):
 			self.root.geometry("750x800+600+100") ## w, h, x, y
@@ -60,7 +60,7 @@ class UI():
 			self.longButtonW = 28
 			self.tabWidth = 620
 		else:
-			self.root.geometry("900x800+600+100") ## w, h, x, y
+			self.root.geometry("900x800+600+0") ## w, h, x, y
 			self.path = os.path.sep.join(sys.argv[0].split(os.path.sep)[:-1]) + "/"
 			self.defaultButtonW = 20
 			self.defaultTextBoxW = 26
