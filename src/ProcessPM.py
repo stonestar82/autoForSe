@@ -4,20 +4,26 @@ from tqdm import tqdm
 from datetime import datetime
 from operator import eq, ne
 from openpyxl import load_workbook
-import paramiko
+import paramiko, platform, sys
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 
 class ProcessPM():
 	def __init__(self) -> None:
-		self.path = "./pm"
+	
+		if eq(platform.system().lower(), "windows"):
+			self.path = "./pm"
+			self.rootPath = "./"
+		else:
+			self.path = os.path.sep.join(sys.argv[0].split(os.path.sep)[:-1]) + "/pm"
+			self.rootPath = os.path.sep.join(sys.argv[0].split(os.path.sep)[:-1]) + "/"
 		self.hostnamePattern = "\nhostname\s(.*)"
 		self.showtechPath = f"{self.path}/showtech/"
 		self.showCmdPatternPrefix = "------------- "
 		self.showCmdPatternSuffix = " -------------"
 		self.showCmdPattern = f"(^{self.showCmdPatternPrefix}show .*?{self.showCmdPatternSuffix}$|^{self.showCmdPatternPrefix}.*?{self.showCmdPatternSuffix}$)"
-		self.reportTemplatePath = "./inventory/pm/pmTemplate.xlsx"
+		self.reportTemplatePath = f"{self.rootPath}inventory/pm/pmTemplate.xlsx"
 		self.cliCmdChanged = {
 			'show bfd neighbor detail': 'show bfd peers detail',
 			'show env cooling': 'show system env cooling',
@@ -40,7 +46,7 @@ class ProcessPM():
 		folderName = now.strftime("%Y%m%d")
 		
   
-		directory = f"./pm/report/{folderName}"
+		directory = f"{self.path}/report/{folderName}"
 		tmpDirectory = f"{directory}/show/tmp"
 		showDirectory = f"{directory}/show"
 		dataDirectory = f"{directory}/data"
@@ -63,13 +69,14 @@ class ProcessPM():
 	
 		if len(showtechList) == 0:
 			return False, "show tech 파일이 없습니다."
-		
+		print("file list ", showtechList)
 		for showtech in sorted(showtechList):
 			print("\n\n", os.path.basename(showtech.strip()), " 처리중\n")
    
 			if not os.path.exists(tmpDirectory):
 				os.makedirs(tmpDirectory)
-				
+			print("show tech 파일 분석중", showtech)
+			pass
 			with open(f"{self.showtechPath}/{showtech}") as r:
 				rl = r.readlines()
 			r.close()
